@@ -1,0 +1,116 @@
+:root {
+  --black: #000;
+  --grey: #ccc;
+  --green: #17a34a;
+  --margin-x: clamp(24px, 8.889vw, 128px);
+  --margin-y: clamp(48px, 6.667vw, 96px);
+  --gutter: 24px;
+}
+
+* { box-sizing: border-box; }
+
+html { scroll-behavior: smooth; scroll-snap-type: y mandatory; }
+
+body {
+  margin: 0;
+  background: #fff;
+  color: var(--black);
+  font-family: Inter, Arial, sans-serif;
+  font-weight: 500;
+  -webkit-font-smoothing: antialiased;
+}
+
+a { color: inherit; text-decoration: none; }
+.nav a { text-decoration: underline; text-underline-offset: 2px; }
+.skip-link { position: fixed; top: -5rem; left: 1rem; z-index: 10; background: #fff; padding: 12px; }
+.skip-link:focus { top: 1rem; }
+
+.nav {
+  position: fixed;
+  z-index: 2;
+  top: var(--margin-y);
+  left: calc(var(--margin-x) + ((100vw - (2 * var(--margin-x)) + var(--gutter)) / 12 * 9));
+  font-size: 13px;
+  line-height: 20px;
+  letter-spacing: -.05em;
+  white-space: nowrap;
+}
+.nav .active { text-decoration: underline; text-underline-offset: 2px; }
+
+.slot {
+  position: relative;
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  column-gap: var(--gutter);
+  min-height: 100svh;
+  padding: var(--margin-y) var(--margin-x);
+  scroll-snap-align: start;
+  scroll-snap-stop: always;
+  overflow: hidden;
+}
+
+h1, h2, h3, p { margin: 0; font: inherit; }
+h1, h2 {
+  grid-column: 1 / span 7;
+  align-self: start;
+  font-size: 48px;
+  line-height: 48px;
+  letter-spacing: -.05em;
+  max-width: 680px;
+}
+
+.presence, .detail, .aside, .offer p, .final-aside, .back {
+  font-size: 13px;
+  line-height: 20px;
+  letter-spacing: -.05em;
+}
+.presence { grid-column: 1 / span 4; align-self: start; margin-top: 169px; }
+.presence span { display: inline-block; width: 5px; height: 5px; margin: 0 4px 1px 0; background: var(--green); border-radius: 50%; }
+.detail { grid-column: 1 / span 4; align-self: end; margin-bottom: 2px; }
+.aside { grid-column: 10 / -1; align-self: end; margin-bottom: 2px; }
+
+.down {
+  grid-column: 6 / span 2;
+  align-self: end;
+  justify-self: center;
+  font-family: Arial, sans-serif;
+  font-size: 54px;
+  font-weight: 400;
+  line-height: .55;
+  transition: transform .2s ease;
+}
+.down:hover { transform: translateY(6px); }
+
+.final h2 { grid-column: 1 / span 7; }
+.offer { grid-column: 1 / span 5; align-self: end; margin-bottom: 35px; }
+.offer h3 { margin-bottom: 18px; font-size: 48px; line-height: 48px; letter-spacing: -.05em; }
+.offer p { margin-bottom: 32px; }
+.offer p + p { margin-bottom: 0; }
+.final-aside { grid-column: 10 / -1; align-self: end; margin-bottom: 16px; }
+.final-aside p { margin-bottom: 32px; }
+.final-aside p + p { margin-bottom: 0; }
+.back { position: absolute; bottom: calc(var(--margin-y) - 2px); left: 50%; transform: translateX(-50%); white-space: nowrap; }
+
+.slot > :not(h1):not(h2) { opacity: .03; transform: translateY(10px); transition: opacity .45s ease, transform .45s ease; }
+.slot.is-visible > :not(h1):not(h2), .intro > :not(h1):not(h2) { opacity: 1; transform: translateY(0); }
+
+@media (max-width: 800px) {
+  :root { --margin-x: 24px; --margin-y: 32px; --gutter: 12px; }
+  html { scroll-snap-type: y proximity; }
+  .nav { top: auto; bottom: 24px; left: 24px; right: 24px; padding: 9px 12px; width: max-content; max-width: calc(100% - 48px); background: #fff; border: 1px solid var(--grey); }
+  .slot { min-height: 100svh; grid-template-columns: repeat(4, 1fr); gap: 12px; padding-bottom: 86px; }
+  h1, h2 { grid-column: 1 / -1; font-size: clamp(35px, 10.6vw, 48px); line-height: .98; }
+  .presence { grid-column: 1 / -1; margin-top: 80px; }
+  .detail { grid-column: 1 / -1; align-self: end; }
+  .aside { grid-column: 1 / -1; align-self: end; margin-bottom: 68px; }
+  .down { display: none; }
+  .offer { grid-column: 1 / -1; margin-bottom: 54px; }
+  .offer h3 { font-size: clamp(35px, 10.6vw, 48px); line-height: .98; }
+  .final-aside { display: none; }
+  .back { bottom: 31px; left: auto; right: 24px; transform: none; }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+  .slot > :not(h1):not(h2) { transition: none; }
+}

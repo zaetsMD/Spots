@@ -1,0 +1,59 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="Slots — a portfolio opening." />
+    <title>Slots</title>
+    <link rel="icon" type="image/svg+xml" href="favicon.svg" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css" />
+  </head>
+  <body>
+    <a class="skip-link" href="#spots">Skip to spots</a>
+
+    <nav class="nav" aria-label="Primary navigation">
+      <a class="active" href="#spots">Spots</a>, <a href="#history">History</a>, <a href="#about">About</a>
+    </nav>
+
+    <main id="spots" class="slots">
+      <section class="slot intro" data-nav="spots" aria-label="Introduction">
+        <h1>Apparently,<br />14 years of experience<br />aren't enough.</h1>
+        <p class="presence"><span aria-hidden="true"></span>1 online now, 133,119 visitors</p>
+        <p class="detail">14 years in design.<br />4 years of freelancing.</p>
+        <p class="aside">Now I'm trying to get back to full-time.</p>
+        <a class="down" href="#history" aria-label="Continue to history">↓</a>
+      </section>
+
+      <section id="history" class="slot" data-nav="history">
+        <h2>412 applications.<br />24 interviews.<br />0 offers.</h2>
+        <p class="detail">One made it to 5 rounds.<br />Another to 4.<br />Three more to 3.<br />The rest: 1–2 stages.</p>
+        <p class="aside">And I'm still going.</p>
+      </section>
+
+      <section class="slot" data-nav="history">
+        <h2>Why not do something<br />with all this traffic?</h2>
+        <p class="detail">Every application brings someone new to my<br />portfolio — designers, marketers, recruiters,<br />hiring managers and people from the industry.</p>
+        <p class="aside">Usually, they'd come here to see my work.</p>
+      </section>
+
+      <section id="about" class="slot final" data-nav="about">
+        <h2>This time, I decided to give<br />them something else to<br />look at.</h2>
+        <div class="offer">
+          <h3>12 spots. 7 days.</h3>
+          <p>I'm opening 12 spots on my portfolio for brands,<br />products, creators or anyone with something<br />worth showing.</p>
+          <p>Pick a position.</p>
+        </div>
+        <div class="final-aside">
+          <p>Something worth showing?<br />Put it here.</p>
+          <p>I'll keep applying.</p>
+        </div>
+        <a class="back" href="#spots">↑&nbsp; Back to top</a>
+      </section>
+    </main>
+
+    <script src="script.js"></script>
+  </body>
+</html>
