@@ -73,7 +73,7 @@ h1, h2 {
   grid-column: 6 / span 2;
   align-self: end;
   justify-self: center;
-  font-family: Arial, sans-serif;
+  font-family: Inter, Arial, sans-serif;
   font-size: 54px;
   font-weight: 400;
   line-height: .55;
