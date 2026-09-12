@@ -64,7 +64,7 @@ h1, h2 {
   line-height: 20px;
   letter-spacing: -.05em;
 }
-.presence { grid-column: 1 / span 4; align-self: start; margin-top: 169px; }
+.presence { grid-column: 1 / span 4; align-self: start; margin-top: 32px; }
 .presence span { display: inline-block; width: 5px; height: 5px; margin: 0 4px 1px 0; background: var(--green); border-radius: 50%; }
 .detail { grid-column: 1 / span 4; align-self: end; margin-bottom: 2px; }
 .aside { grid-column: 10 / -1; align-self: end; margin-bottom: 2px; }
@@ -100,7 +100,7 @@ h1, h2 {
   .nav { top: auto; bottom: 24px; left: 24px; right: 24px; padding: 9px 12px; width: max-content; max-width: calc(100% - 48px); background: #fff; border: 1px solid var(--grey); }
   .slot { min-height: 100svh; grid-template-columns: repeat(4, 1fr); gap: 12px; padding-bottom: 86px; }
   h1, h2 { grid-column: 1 / -1; font-size: clamp(35px, 10.6vw, 48px); line-height: .98; }
-  .presence { grid-column: 1 / -1; margin-top: 80px; }
+  .presence { grid-column: 1 / -1; margin-top: 32px; }
   .detail { grid-column: 1 / -1; align-self: end; }
   .aside { grid-column: 1 / -1; align-self: end; margin-bottom: 68px; }
   .down { display: none; }
