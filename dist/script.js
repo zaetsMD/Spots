@@ -1,6 +1,7 @@
 const main = document.querySelector('.slots');
 const sections = [...document.querySelectorAll('.slot')];
 const links = [...document.querySelectorAll('.nav a')];
+const contentLinks = [...document.querySelectorAll('.content-nav a')];
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const desktop = matchMedia('(min-width: 801px) and (min-height: 600px)');
 const stage = document.createElement('div');
@@ -31,11 +32,10 @@ function render() {
     section.inert = enabled && index !== current;
     section.classList.toggle('is-visible', index === current);
   });
-  links.forEach(link => {
+  contentLinks.forEach(link => {
     const selected = link.hash === `#${sections[current].dataset.nav}`;
     link.classList.toggle('active', selected);
-    if (selected) link.setAttribute('aria-current', 'location');
-    else link.removeAttribute('aria-current');
+    link.setAttribute('aria-current', selected ? 'location' : 'false');
   });
 }
 function configure() {
@@ -54,6 +54,7 @@ function goToHash(hash, smooth = true) {
   window.scrollTo({ top, behavior: smooth && !motion.matches ? 'smooth' : 'instant' });
 }
 document.addEventListener('click', event => {
+  if (event.defaultPrevented) return;
   const link = event.target.closest('a[href^="#"]');
   if (!link || !enabled || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return;
   event.preventDefault();
@@ -77,7 +78,7 @@ const ring = gallery.querySelector('.spot-ring');
 const cards = Array.from({ length: 12 }, (_, index) => {
   const card = document.createElement('a');
   card.className = 'spot-card';
-  card.href = '#about';
+  card.href = '#apply';
   card.setAttribute('aria-label', `Spot ${index + 1} of 12: Claim this spot for €25`);
   card.innerHTML = '<svg viewBox="0 0 144 184" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="0" x2="144" y2="184" /></svg><span class="spot-claim">Claim this<br>spot<br>for €25</span>';
   ring.append(card);
@@ -155,3 +156,42 @@ window.addEventListener('resize', restartGallery);
 document.addEventListener('visibilitychange', restartGallery);
 motion.addEventListener('change', restartGallery);
 restartGallery();
+
+const application = document.querySelector('.application');
+const applicationForm = document.querySelector('.application-form');
+const closeApplication = document.querySelector('.application-close');
+const slotNumber = document.querySelector('.slot-number');
+const paymentNote = document.querySelector('.payment-note');
+const revolutLink = document.querySelector('.revolut-link');
+const submitApplication = document.querySelector('.submit-application');
+const logoUpload = document.querySelector('#logo-upload');
+const logoPreview = document.querySelector('.logo-preview');
+const uploadPrompt = document.querySelector('.upload-prompt');
+const uploadError = document.querySelector('.upload-error');
+const thankYou = document.querySelector('.thank-you');
+let selectedSlot = 1;
+let paymentStarted = false;
+let paymentWindowWasHidden = false;
+let previewUrl = '';
+let activeFlight;
+const revolutUrl = slot => `https://revolut.me/ashadetare?amount=2500&currency=eur&note=slot${slot}`;
+function closeForm() { application.classList.remove('is-open'); application.classList.remove('is-animating'); activeFlight?.remove(); activeFlight = undefined; application.setAttribute('aria-hidden', 'true'); document.body.classList.remove('application-active'); }
+function showSubmitAfterReturn() { if (paymentStarted && (paymentWindowWasHidden || document.hasFocus())) submitApplication.hidden = false; }
+function animateSpotToUpload(origin, sourceCard) { if (!origin || motion.matches) return; const target = document.querySelector('.upload-dropzone').getBoundingClientRect(); const flight = sourceCard.cloneNode(true); flight.className = 'spot-flight'; Object.assign(flight.style, { left: `${origin.left}px`, top: `${origin.top}px`, width: `${origin.width}px`, height: `${origin.height}px`, transform: 'none' }); document.body.append(flight); activeFlight = flight; flight.animate([{ left: `${origin.left}px`, top: `${origin.top}px`, width: `${origin.width}px`, height: `${origin.height}px`, opacity: 1, transform: 'rotate(0deg)' }, { left: `${target.left}px`, top: `${target.top}px`, width: `${target.width}px`, height: `${target.height}px`, opacity: 1, transform: 'rotate(-1.5deg)', offset: .82 }, { left: `${target.left}px`, top: `${target.top}px`, width: `${target.width}px`, height: `${target.height}px`, opacity: 1, transform: 'rotate(0deg)' }], { duration: 420, easing: 'cubic-bezier(.22,.8,.2,1)', fill: 'forwards' }).finished.finally(() => { Object.assign(flight.style, { left: `${target.left}px`, top: `${target.top}px`, width: `${target.width}px`, height: `${target.height}px`, opacity: '1', transform: 'none', zIndex: '31' }); application.classList.remove('is-animating'); flight.classList.add('is-arrived'); flight.innerHTML = '<span class="spot-upload-prompt">Click<br>to upload<br>logo</span>'; flight.addEventListener('click', () => logoUpload.click(), { once: true }); }); }
+function openForm(slot, origin) { selectedSlot = slot; paymentStarted = false; paymentWindowWasHidden = false; submitApplication.hidden = true; slotNumber.textContent = slot; paymentNote.textContent = `slot${slot}`; revolutLink.href = revolutUrl(slot); application.classList.add('is-open'); if (origin && !motion.matches) application.classList.add('is-animating'); application.setAttribute('aria-hidden', 'false'); document.body.classList.add('application-active'); animateSpotToUpload(origin, cards[slot - 1]); }
+cards.forEach((card, index) => card.addEventListener('click', event => { event.preventDefault(); openForm(index + 1, card.getBoundingClientRect()); }));
+function cancelSpotApplication() { if (!application.classList.contains('is-open')) return; const card = cards[selectedSlot - 1]; const departingCard = activeFlight; const from = (departingCard || document.querySelector('.upload-dropzone')).getBoundingClientRect(); const to = card.getBoundingClientRect(); const flight = document.createElement('div'); flight.className = 'spot-flight spot-return'; flight.innerHTML = departingCard?.innerHTML || '<svg viewBox="0 0 144 184" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="0" x2="144" y2="184" /></svg><span class="spot-claim">Claim this<br>spot<br>for €25</span>'; Object.assign(flight.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`, opacity: '1', transform: 'none', zIndex: '31' }); card.classList.add('is-returning'); closeForm(); document.body.append(flight); flight.animate([{ left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`, opacity: 1, transform: 'rotate(0deg)' }, { left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px`, height: `${to.height}px`, opacity: 1, transform: 'rotate(-1.5deg)' }], { duration: 900, easing: 'cubic-bezier(.22,.8,.2,1)', fill: 'forwards' }).finished.finally(() => { flight.remove(); card.classList.remove('is-returning'); }); }
+closeApplication.addEventListener('click', cancelSpotApplication);
+document.addEventListener('keydown', event => { if (event.key === 'Escape' && application.classList.contains('is-open')) cancelSpotApplication(); });
+revolutLink.addEventListener('click', () => { paymentStarted = true; paymentWindowWasHidden = false; });
+window.addEventListener('blur', () => { if (paymentStarted) paymentWindowWasHidden = true; });
+window.addEventListener('focus', showSubmitAfterReturn);
+document.addEventListener('visibilitychange', () => { if (document.hidden && paymentStarted) paymentWindowWasHidden = true; if (!document.hidden) showSubmitAfterReturn(); });
+logoUpload.addEventListener('change', () => { const [file] = logoUpload.files; if (!file) return; if (previewUrl) URL.revokeObjectURL(previewUrl); previewUrl = URL.createObjectURL(file); logoPreview.src = previewUrl; logoPreview.hidden = false; uploadPrompt.hidden = true; activeFlight?.remove(); activeFlight = undefined; });
+logoUpload.addEventListener('change', () => { if (!logoUpload.files[0]) return; logoPreview.hidden = true; uploadPrompt.hidden = false; uploadError.hidden = true; });
+logoPreview.addEventListener('load', () => { logoPreview.hidden = false; uploadPrompt.hidden = true; });
+logoPreview.addEventListener('error', () => { logoPreview.removeAttribute('src'); uploadPrompt.hidden = true; uploadError.textContent = 'This browser cannot preview HEIC images. Please convert it to JPG, PNG or WEBP and upload again.'; uploadError.hidden = false; });
+function markSpotPending(card) { card.classList.add('is-pending'); card.setAttribute('aria-label', `Spot ${selectedSlot} is pending review`); card.innerHTML = '<span class="spot-pending">Pending<br><strong>Under review</strong></span>'; }
+function openThankYou() { location.assign(`thank-you.html?spot=${selectedSlot}`); }
+function returnSpotToRing() { const card = cards[selectedSlot - 1]; const from = document.querySelector('.upload-dropzone').getBoundingClientRect(); const to = card.getBoundingClientRect(); const flight = document.createElement('div'); flight.className = 'spot-flight spot-return'; if (logoPreview.src && !logoPreview.hidden) { const image = logoPreview.cloneNode(); image.hidden = false; flight.append(image); } else flight.innerHTML = '<span>Pending<br><strong>Under review</strong></span>'; Object.assign(flight.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`, opacity: '1', transform: 'none', zIndex: '31' }); card.classList.add('is-returning'); closeForm(); document.body.append(flight); flight.animate([{ left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`, opacity: 1, transform: 'rotate(0deg)' }, { left: `${to.left}px`, top: `${to.top}px`, width: `${to.width}px`, height: `${to.height}px`, opacity: 1, transform: 'rotate(1.5deg)' }], { duration: 900, easing: 'cubic-bezier(.22,.8,.2,1)', fill: 'forwards' }).finished.finally(() => { flight.remove(); card.classList.remove('is-returning'); markSpotPending(card); openThankYou(); }); }
+applicationForm.addEventListener('submit', event => { event.preventDefault(); event.stopImmediatePropagation(); if (!paymentStarted || submitApplication.hidden || !applicationForm.reportValidity()) return; returnSpotToRing(); }, true);
