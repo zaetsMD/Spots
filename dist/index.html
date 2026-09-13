@@ -9,7 +9,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=20" />
+    <link rel="stylesheet" href="styles.css?v=22" />
   </head>
   <body>
     <a class="skip-link" href="#spots">Skip to spots</a>
@@ -66,21 +66,41 @@
     <section class="application" aria-hidden="true" aria-labelledby="application-title">
       <div class="application-upload">
         <input id="logo-upload" class="visually-hidden" type="file" accept="image/*,.heic,.heif" />
-        <label class="upload-dropzone" for="logo-upload"><img class="logo-preview" alt="Uploaded logo preview" hidden /><span class="upload-prompt">Click<br />to upload<br />logo</span><span class="upload-error" role="status" hidden></span></label>
+        <label class="upload-dropzone" for="logo-upload">
+          <img class="logo-preview" alt="Uploaded logo preview" hidden />
+          <span class="upload-prompt">Click<br />to upload<br />logo</span>
+          <span class="upload-error" role="status" hidden></span>
+        </label>
       </div>
       <form class="application-form">
         <button class="application-close" type="button" aria-label="Close application">×</button>
         <h1 id="application-title">Spot #<span class="slot-number">1</span></h1>
         <p class="application-intro">Your logo will be displayed for 7 days once approved. Your 7 days start when we verify your payment — not when you submit.</p>
-        <label>Website*<input name="website" type="text" inputmode="url" placeholder="yoursite.com" required /></label>
-        <label>Contact email*<input name="email" type="email" inputmode="email" placeholder="hello@gmail.com" required /></label>
-        <div class="payment"><p class="payment-title">Payment</p><p>Click the <a class="revolut-link" target="_blank" rel="noopener">Revolut link</a> — it opens the payment with the slot reference pre-filled.<br />Pay €25. The note <span class="payment-note">slot1</span> confirms which slot.<br />Return here after payment.</p></div>
-        <label class="message-label">Message to the designer <span>Optional</span><textarea name="message" placeholder="Anything you'd like to say."></textarea></label>
+
+        <label>Website*
+          <input name="website" type="text" inputmode="url" placeholder="yoursite.com" required />
+        </label>
+        <label>Contact email*
+          <input name="email" type="email" inputmode="email" placeholder="hello@gmail.com" required />
+        </label>
+        <div class="payment">
+          <p class="payment-title">Payment</p>
+          <p>Click the <a class="revolut-link" target="_blank" rel="noopener">Revolut link</a> — it opens the payment with the slot reference pre-filled.<br />Pay €25. The note <span class="payment-note">slot1</span> confirms which slot.<br />Return here after payment.</p>
+        </div>
+        <label class="message-label reveal-after-payment" hidden>Message to the designer <span>Optional</span>
+          <textarea name="message" placeholder="Anything you'd like to say."></textarea>
+        </label>
         <button class="submit-application" type="submit" hidden>Submit</button>
       </form>
     </section>
-    <section class="thank-you" aria-hidden="true" aria-labelledby="thank-you-title"><h1 id="thank-you-title">Thank you for your<br />submission.</h1><div class="pending-card"><span>Pending</span><strong>Under review</strong></div><p class="review-copy">Your application is now under review.<br />We'll verify your payment and get your brand live<br />as soon as everything is approved.</p><p class="live-copy">We'll let you know when it's live.</p></section>
 
-    <script src="script.js?v=24"></script>
+    <section class="thank-you" aria-hidden="true" aria-labelledby="thank-you-title">
+      <h1 id="thank-you-title">Thank you for your<br />submission.</h1>
+      <div class="pending-card"><span>Pending</span><strong>Under review</strong></div>
+      <p class="review-copy">Your application is now under review.<br />We'll verify your payment and get your brand live<br />as soon as everything is approved.</p>
+      <p class="live-copy">We'll let you know when it's live.</p>
+    </section>
+
+    <script src="script.js?v=29"></script>
   </body>
 </html>
