@@ -7,7 +7,7 @@ const desktop = matchMedia('(min-width: 801px) and (min-height: 600px)');
 const presence = document.querySelector('.presence');
 const presenceCopy = presence?.querySelector('.presence-copy');
 const analyticsShareId = '83C7lwF3Wyao9hIR';
-const analyticsGateway = 'https://gateway-us.umami.is/api';
+const analyticsGateway = 'https://gateway-eu.umami.is/api';
 
 async function updatePresence() {
   if (!presenceCopy) return;
@@ -16,10 +16,13 @@ async function updatePresence() {
       if (!response.ok) throw new Error('Analytics share unavailable');
       return response.json();
     });
-    const headers = { Authorization: `Bearer ${share.token}` };
+    const headers = {
+      'x-umami-share-token': share.token,
+      'x-umami-share-context': share.shareId,
+    };
     const [active, totals] = await Promise.all([
       fetch(`${analyticsGateway}/websites/${share.websiteId}/active`, { headers }).then(response => response.json()),
-      fetch(`${analyticsGateway}/websites/${share.websiteId}/stats?startAt=0&endAt=${Date.now()}`, { headers }).then(response => response.json()),
+      fetch(`${analyticsGateway}/websites/${share.websiteId}/stats?startAt=${Date.parse('2026-09-13T00:00:00Z')}&endAt=${Date.now()}`, { headers }).then(response => response.json()),
     ]);
     presenceCopy.textContent = `${Number(active.visitors || 0)} online now, ${Number(totals.visitors || 0).toLocaleString()} visitors`;
   } catch {
