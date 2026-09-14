@@ -82,7 +82,9 @@ h1, h2 {
 }
 .presence { grid-column: 1 / span 4; align-self: start; margin-top: 32px; color: inherit; text-decoration: none; }
 .presence:hover, .presence:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
-.presence > span:first-child { display: inline-block; width: 5px; height: 5px; margin: 0 4px 1px 0; background: var(--green); border-radius: 50%; }
+.presence > span:first-child { display: inline-block; width: 5px; height: 5px; margin: 0 4px 1px 0; background: var(--green); border-radius: 50%; animation: presence-pulse 1.7s ease-in-out infinite; }
+@keyframes presence-pulse { 50% { opacity: .2; } }
+@media (prefers-reduced-motion: reduce) { .presence > span:first-child { animation: none; } }
 .detail { grid-column: 1 / span 4; align-self: end; margin-bottom: 2px; }
 .aside { grid-column: 10 / -1; align-self: end; margin-bottom: 2px; }
 
