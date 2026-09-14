@@ -4,6 +4,31 @@ const links = [...document.querySelectorAll('.nav a')];
 const contentLinks = [...document.querySelectorAll('.content-nav a')];
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const desktop = matchMedia('(min-width: 801px) and (min-height: 600px)');
+const presence = document.querySelector('.presence');
+const presenceCopy = presence?.querySelector('.presence-copy');
+const analyticsShareId = '83C7lwF3Wyao9hIR';
+const analyticsGateway = 'https://gateway-us.umami.is/api';
+
+async function updatePresence() {
+  if (!presenceCopy) return;
+  try {
+    const share = await fetch(`${analyticsGateway}/share/${analyticsShareId}`).then(response => {
+      if (!response.ok) throw new Error('Analytics share unavailable');
+      return response.json();
+    });
+    const headers = { Authorization: `Bearer ${share.token}` };
+    const [active, totals] = await Promise.all([
+      fetch(`${analyticsGateway}/websites/${share.websiteId}/active`, { headers }).then(response => response.json()),
+      fetch(`${analyticsGateway}/websites/${share.websiteId}/stats?startAt=0&endAt=${Date.now()}`, { headers }).then(response => response.json()),
+    ]);
+    presenceCopy.textContent = `${Number(active.visitors || 0)} online now, ${Number(totals.visitors || 0).toLocaleString()} visitors`;
+  } catch {
+    presenceCopy.textContent = 'Live statistics unavailable';
+  }
+}
+
+updatePresence();
+setInterval(updatePresence, 60_000);
 const stage = document.createElement('div');
 stage.className = 'scroll-stage';
 main.append(stage);
