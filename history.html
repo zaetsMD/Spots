@@ -3,15 +3,31 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>History — Slots</title>
+    <title>History — Spots</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="stylesheet" href="styles.css?v=22" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=25" />
     <script defer src="https://cloud.umami.is/script.js" data-website-id="fb242c3f-2898-4ec8-938b-f7dbff609128"></script>
   </head>
-  <body>
+  <body class="history">
     <nav class="nav" aria-label="Primary navigation">
-      <a href="index.html">Spots</a>, <a class="active" aria-current="page" href="history.html">History</a>, <a href="about.html">About</a>
+      <div class="nav-links"><a href="index.html">Spots</a>, <a class="active" aria-current="page" href="history.html">History</a>, <a href="about.html">About</a></div>
     </nav>
-    <main></main>
+    <main class="history-page">
+      <h1>History</h1>
+
+      <p class="history-empty" aria-label="Nothing here yet.">
+        <span>Nothing</span>
+        <span>here</span>
+        <span>yet.</span>
+      </p>
+
+      <div class="history-copy">
+        <p>This is where past spots will live.</p>
+        <p>Once a brand’s 7 days on the main page are over, it moves here<br />— permanently. Pay once, get 7 days in the spotlight, stay in the<br />history forever.</p>
+      </div>
+    </main>
   </body>
 </html>

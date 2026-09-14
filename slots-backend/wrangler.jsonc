@@ -1,0 +1,26 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "slots-api",
+  "main": "src/worker.js",
+  "compatibility_date": "2026-09-13",
+  "d1_databases": [
+    {
+      "binding": "DB",
+      "database_name": "slots",
+      "database_id": "6431225b-3167-49f8-96cb-d418344396cc"
+    }
+  ],
+  "r2_buckets": [
+    {
+      "binding": "LOGOS",
+      "bucket_name": "slots-logos"
+    }
+  ],
+  "vars": {
+    "PUBLIC_ORIGIN": "https://slots.zaetsmd.workers.dev",
+    "OWNER_EMAIL": "zaetsmd@gmail.com"
+  },
+  "triggers": {
+    "crons": ["15 * * * *"]
+  }
+}

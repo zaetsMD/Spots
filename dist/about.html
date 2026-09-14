@@ -3,15 +3,28 @@
   <head>
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-    <title>About — Slots</title>
+    <title>About — Spots</title>
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
-    <link rel="stylesheet" href="styles.css?v=22" />
+    <link rel="preconnect" href="https://fonts.googleapis.com" />
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@500&display=swap" rel="stylesheet" />
+    <link rel="stylesheet" href="styles.css?v=26" />
     <script defer src="https://cloud.umami.is/script.js" data-website-id="fb242c3f-2898-4ec8-938b-f7dbff609128"></script>
   </head>
-  <body>
+  <body class="about">
     <nav class="nav" aria-label="Primary navigation">
-      <a href="index.html">Spots</a>, <a href="history.html">History</a>, <a class="active" aria-current="page" href="about.html">About</a>
+      <div class="nav-links"><a href="index.html">Spots</a>, <a href="history.html">History</a>, <a class="active" aria-current="page" href="about.html">About</a></div>
     </nav>
-    <main></main>
+    <main class="about-page">
+      <div class="about-photo" aria-hidden="true"><img src="about-portrait.jpg" alt="" /></div>
+      <h1>I take my work seriously,<br />but always leave room<br />to experiment.</h1>
+      <p class="about-copy">With 14 years of experience in design, I create<br />digital products that are useful, engaging and<br />enjoyable to use — always curious about new<br />technologies, AI and better ways to bring ideas<br />to life.</p>
+      <aside class="about-details">
+        <section><p class="about-label">Expertise</p><p>Product Design<br />UX Strategy<br />Market Research<br />Design Systems<br />Prototyping<br />AI<br />Digital Audit</p></section>
+        <section><p class="about-label">Socials</p><p><a href="https://x.com/zaetsmd" target="_blank" rel="noopener noreferrer">X.com</a><br /><a href="https://www.linkedin.com/in/eugenezaycev/" target="_blank" rel="noopener noreferrer">LinkedIn</a><br /><a href="https://www.instagram.com/haikuzaycev/" target="_blank" rel="noopener noreferrer">Instagram</a></p></section>
+        <a class="resume-link" href="https://drive.google.com/file/d/1UTBMVT8vD41N-u5muR174AJ3aDBoGm81/view?usp=sharing" target="_blank" rel="noopener noreferrer">Resume</a>
+      </aside>
+    </main>
+    <script src="about.js?v=1"></script>
   </body>
 </html>

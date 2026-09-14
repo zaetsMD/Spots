@@ -1,5 +1,5 @@
-const main = document.querySelector('.slots');
-const sections = [...document.querySelectorAll('.slot')];
+const main = document.querySelector('.spots');
+const sections = [...document.querySelectorAll('.spot')];
 const links = [...document.querySelectorAll('.nav a')];
 const contentLinks = [...document.querySelectorAll('.content-nav a')];
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
@@ -113,11 +113,14 @@ const cards = Array.from({ length: 12 }, (_, index) => {
   return card;
 });
 const heights = [20, -64, 40, -30, 58, -48, 24, -40, 56, -26, -58, 66];
+// Scrolling is the deliberate way to circulate the ring. Pointer movement only
+// adds a small, reversible camera drift, so cards do not run away from the cursor.
 let angle = 0.18;
 let pointer = 0;
 let pointerY = 0;
 let parallaxX = 0;
 let parallaxY = 0;
+let pointerAngle = 0;
 let lastGalleryScroll = scrollY;
 let hovered = false;
 let focused = false;
@@ -128,16 +131,16 @@ function drawGallery() {
   const width = gallery.clientWidth;
   const height = gallery.clientHeight;
   // Move the whole scene first, then let its nearer cards travel farther.
-  ring.style.transform = `translate3d(${parallaxX * 48}px, ${parallaxY * 34}px, 0) perspective(1200px) rotateX(${-parallaxY * 2.5}deg) rotateY(${parallaxX * 3.5}deg)`;
+  ring.style.transform = `translate3d(${parallaxX * 22}px, ${parallaxY * 34}px, 0) perspective(1200px) rotateX(${-parallaxY * 2.5}deg) rotateY(${parallaxX * 1.5}deg)`;
   cards.forEach((card, index) => {
-    const theta = angle + index / cards.length * Math.PI * 2;
+    const theta = angle + pointerAngle + index / cards.length * Math.PI * 2;
     const depth = (Math.cos(theta) + 1) / 2;
     const scale = 0.55 + depth * 0.45;
     // The front cards lead and the distant cards lag, like the reference's camera drift.
-    const parallax = 16 + depth * 48;
+    const parallax = 8 + depth * 24;
     const x = Math.sin(theta) * width * 0.43 + parallaxX * parallax;
     const y = (depth - 0.5) * height * 0.34 + heights[index] + parallaxY * parallax * 0.62;
-    const turn = Math.sin(theta) * -48 + parallaxX * (7 + depth * 12);
+    const turn = Math.sin(theta) * -48 + parallaxX * (3 + depth * 6);
     const pitch = -parallaxY * (3 + depth * 7);
     card.style.transform = `translate(-50%, -50%) translate(${x}px, ${y}px) perspective(800px) rotateX(${pitch}deg) rotateY(${turn}deg) rotateZ(${Math.sin(theta * 2) * 2}deg) scale(${scale})`;
     card.style.opacity = 0.12 + depth * 0.76;
@@ -150,6 +153,7 @@ function animateGallery(time) {
   previousTime = time;
   parallaxX += (pointer - parallaxX) * Math.min(1, delta * 7);
   parallaxY += (pointerY - parallaxY) * Math.min(1, delta * 7);
+  pointerAngle += (pointer * 0.12 - pointerAngle) * Math.min(1, delta * 5);
   drawGallery();
   if (galleryVisible && !document.hidden && !motion.matches && innerWidth > 800) galleryFrame = requestAnimationFrame(animateGallery);
 }
@@ -161,8 +165,6 @@ function restartGallery() {
 }
 window.addEventListener('pointermove', event => {
   const nextPointer = (event.clientX / innerWidth - 0.5) * 2;
-  // Mouse travel turns the ring itself; simply scrolling does not affect it.
-  if (!hovered && !focused) angle += (nextPointer - pointer) * 1.35;
   pointer = nextPointer;
   pointerY = (event.clientY / innerHeight - 0.5) * 2;
   hovered = Boolean(event.target.closest('.spot-card'));
@@ -170,7 +172,7 @@ window.addEventListener('pointermove', event => {
 window.addEventListener('scroll', () => {
   const distance = scrollY - lastGalleryScroll;
   lastGalleryScroll = scrollY;
-  // The gallery is viewport-pinned, while the cards circulate as the story moves.
+  // The gallery is viewport-pinned, while deliberate scrolling circulates cards.
   if (!hovered && !focused) angle += distance * 0.0026;
 }, { passive: true });
 window.addEventListener('blur', () => { pointer = 0; pointerY = 0; hovered = false; });
@@ -185,11 +187,11 @@ document.addEventListener('visibilitychange', restartGallery);
 motion.addEventListener('change', restartGallery);
 restartGallery();
 
-// Slot application flow.
+// Spot application flow.
 const application = document.querySelector('.application');
 const applicationForm = document.querySelector('.application-form');
 const closeApplication = document.querySelector('.application-close');
-const slotNumber = document.querySelector('.slot-number');
+const spotNumber = document.querySelector('.spot-number');
 const paymentNote = document.querySelector('.payment-note');
 const revolutLink = document.querySelector('.revolut-link');
 const submitApplication = document.querySelector('.submit-application');
@@ -199,15 +201,62 @@ const logoPreview = document.querySelector('.logo-preview');
 const uploadPrompt = document.querySelector('.upload-prompt');
 const uploadError = document.querySelector('.upload-error');
 const thankYou = document.querySelector('.thank-you');
-let selectedSlot = 1;
+const spotsApi = 'https://slots-api.zaetsmd.workers.dev';
+
+function formatTimeRemaining(expiresAt) {
+  const remaining = Math.max(0, new Date(expiresAt).getTime() - Date.now());
+  const days = Math.floor(remaining / 86400000);
+  const hours = Math.floor(remaining / 3600000) % 24;
+  const minutes = Math.floor(remaining / 60000) % 60;
+  return `${days}d ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m`;
+}
+
+function showLiveSpot(spot) {
+  const card = cards[spot.spot - 1];
+  if (!card) return;
+  const logo = document.createElement('img');
+  logo.src = `${spotsApi}${spot.logoUrl}`;
+  logo.alt = `Logo in spot ${spot.spot}`;
+  const countdown = document.createElement('span');
+  countdown.className = 'spot-countdown';
+  const updateCountdown = () => { countdown.textContent = formatTimeRemaining(spot.expiresAt); };
+  updateCountdown();
+  window.setInterval(updateCountdown, 60000);
+  card.classList.add('is-live');
+  card.href = `${spotsApi}${spot.goUrl}`;
+  card.target = '_blank';
+  card.rel = 'noopener';
+  card.setAttribute('aria-label', `Visit website in live spot ${spot.spot}`);
+  card.replaceChildren(logo, countdown);
+}
+
+function showPendingSpot(spot) {
+  const card = cards[spot.spot - 1];
+  if (!card) return;
+  const label = document.createElement('span');
+  label.className = 'spot-pending';
+  label.innerHTML = 'Pending<br><strong>Under review</strong>';
+  card.classList.add('is-pending');
+  card.removeAttribute('target');
+  card.removeAttribute('rel');
+  card.href = '#spots';
+  card.setAttribute('aria-label', `Spot ${spot.spot} is pending review`);
+  card.replaceChildren(label);
+}
+
+fetch(`${spotsApi}/api/spots`)
+  .then(response => response.ok ? response.json() : [])
+  .then(spots => spots.forEach(spot => spot.status === 'pending' ? showPendingSpot(spot) : showLiveSpot(spot)))
+  .catch(() => {});
+let selectedSpot = 1;
 let paymentStarted = false;
 let paymentWindowWasHidden = false;
 let previewUrl = '';
 let uploadedLogoData = '';
 let activeFlight;
 
-function revolutUrl(slot) {
-  return `https://revolut.me/ashadetare?amount=2500&currency=eur&note=slot${slot}`;
+function revolutUrl(spot) {
+  return `https://revolut.me/ashadetare?amount=2500&currency=eur&note=spot${spot}`;
 }
 function closeForm() {
   application.classList.remove('is-open');
@@ -249,28 +298,30 @@ function animateSpotToUpload(origin, sourceCard) {
     flight.addEventListener('click', () => logoUpload.click(), { once: true });
   });
 }
-function openForm(slot, origin) {
-  selectedSlot = slot;
+function openForm(spot, origin) {
+  selectedSpot = spot;
   paymentStarted = false;
   paymentWindowWasHidden = false;
   submitApplication.hidden = true;
   messageLabel.hidden = true;
-  slotNumber.textContent = slot;
-  paymentNote.textContent = `slot${slot}`;
-  revolutLink.href = revolutUrl(slot);
+  spotNumber.textContent = spot;
+  paymentNote.textContent = `spot${spot}`;
+  revolutLink.href = revolutUrl(spot);
   application.classList.add('is-open');
   if (origin && !motion.matches) application.classList.add('is-animating');
   application.setAttribute('aria-hidden', 'false');
   document.body.classList.add('application-active');
-  animateSpotToUpload(origin, cards[slot - 1]);
+  animateSpotToUpload(origin, cards[spot - 1]);
 }
 cards.forEach((card, index) => card.addEventListener('click', event => {
+  if (card.classList.contains('is-live')) return;
+  if (card.classList.contains('is-pending')) { event.preventDefault(); return; }
   event.preventDefault();
   openForm(index + 1, card.getBoundingClientRect());
 }));
 function cancelSpotApplication() {
   if (!application.classList.contains('is-open')) return;
-  const card = cards[selectedSlot - 1];
+  const card = cards[selectedSpot - 1];
   const departingCard = activeFlight;
   const from = (departingCard || document.querySelector('.upload-dropzone')).getBoundingClientRect();
   const to = card.getBoundingClientRect();
@@ -324,14 +375,44 @@ logoPreview.addEventListener('error', () => {
   uploadError.textContent = 'This browser cannot preview HEIC images. Please convert it to JPG, PNG or WEBP and upload again.';
   uploadError.hidden = false;
 });
-function markSpotPending(card) { card.classList.add('is-pending'); card.setAttribute('aria-label', `Spot ${selectedSlot} is pending review`); card.innerHTML = '<span class="spot-pending">Pending<br><strong>Under review</strong></span>'; }
+function markSpotPending(card) { card.classList.add('is-pending'); card.setAttribute('aria-label', `Spot ${selectedSpot} is pending review`); card.innerHTML = '<span class="spot-pending">Pending<br><strong>Under review</strong></span>'; }
 function openThankYou() {
-  if (uploadedLogoData) sessionStorage.setItem('slots-pending-logo', uploadedLogoData);
-  else sessionStorage.removeItem('slots-pending-logo');
-  location.assign(`thank-you.html?spot=${selectedSlot}`);
+  if (uploadedLogoData) sessionStorage.setItem('spots-pending-logo', uploadedLogoData);
+  else sessionStorage.removeItem('spots-pending-logo');
+  location.assign(`thank-you.html?spot=${selectedSpot}`);
 }
 function returnSpotToRing() {
   closeForm();
   openThankYou();
 }
-applicationForm.addEventListener('submit', event => { event.preventDefault(); event.stopImmediatePropagation(); if (!paymentStarted || submitApplication.hidden || !applicationForm.reportValidity()) return; returnSpotToRing(); }, true);
+applicationForm.addEventListener('submit', async event => {
+  event.preventDefault();
+  event.stopImmediatePropagation();
+  if (!paymentStarted || submitApplication.hidden || !applicationForm.reportValidity()) return;
+
+  const [logo] = logoUpload.files;
+  if (!logo) {
+    uploadError.textContent = 'Please upload your logo before submitting.';
+    uploadError.hidden = false;
+    return;
+  }
+
+  const data = new FormData(applicationForm);
+  data.set('spot', String(selectedSpot));
+  data.set('logo', logo);
+  submitApplication.disabled = true;
+  const originalLabel = submitApplication.textContent;
+  submitApplication.textContent = 'Submitting…';
+  try {
+    const response = await fetch(`${spotsApi}/api/applications`, { method: 'POST', body: data });
+    const result = await response.json().catch(() => ({}));
+    if (!response.ok) throw new Error(result.error || 'Your submission could not be sent. Please try again.');
+    returnSpotToRing();
+  } catch (error) {
+    uploadError.textContent = error.message;
+    uploadError.hidden = false;
+  } finally {
+    submitApplication.disabled = false;
+    submitApplication.textContent = originalLabel;
+  }
+}, true);
