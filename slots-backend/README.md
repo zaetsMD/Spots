@@ -1,6 +1,6 @@
 # Spots backend
 
-This is a standalone Cloudflare Worker for Spots. The current deployment continues to use the existing `slots` D1 database and `slots-logos` R2 bucket.
+This Cloudflare Worker serves the complete Spots site from `../dist` and its API from the same origin. It uses the existing `slots` D1 database and `slots-logos` R2 bucket.
 
 ## Deploy
 
@@ -14,13 +14,18 @@ npx wrangler secret put MAILER_TOKEN
 npx wrangler deploy
 ```
 
-For an existing database created before this rename, run `migrations/0001_rename_slot_to_spot.sql` once before deploying the worker.
+For an existing database, run each migration in `migrations/` once, in filename order, before deploying the worker. Migration `0002` adds the manually entered approval amount plus rejection timestamp:
+
+```sh
+npx wrangler d1 execute slots --remote --file=migrations/0002_add_review_amount_and_timestamps.sql
+```
 
 `MAILER_URL` and `MAILER_TOKEN` are added after the Gmail Apps Script is deployed as a private token-protected web endpoint. Until then, all application and review records work; email delivery is simply skipped.
 
 ## Endpoints
 
 - `POST /api/applications` — accepts `spot`, `website`, `email`, `message`, and `logo` multipart data.
+- `GET /` — serves the public site and static assets from `../dist`.
 - `GET /api/spots` — lists live spots for the public site.
 - `GET /go/:applicationId` — records a click and redirects to the advertiser.
 - `/admin` — password-protected review panel.

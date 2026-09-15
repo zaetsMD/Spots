@@ -6,6 +6,7 @@ if (photo && canHover.matches && !reducedMotion.matches) {
   let frame;
   let offsetX = 0;
   let offsetY = 0;
+
   const render = () => {
     frame = undefined;
     photo.style.setProperty('--photo-x', `${offsetX}px`);
@@ -14,6 +15,7 @@ if (photo && canHover.matches && !reducedMotion.matches) {
   const schedule = () => {
     if (!frame) frame = requestAnimationFrame(render);
   };
+
   photo.addEventListener('pointermove', event => {
     const bounds = photo.getBoundingClientRect();
     const x = (event.clientX - bounds.left) / bounds.width;

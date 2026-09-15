@@ -9,14 +9,14 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=24" />
+    <link rel="stylesheet" href="styles.css?v=35" />
     <script defer src="https://cloud.umami.is/script.js" data-website-id="fb242c3f-2898-4ec8-938b-f7dbff609128"></script>
   </head>
   <body>
     <a class="skip-link" href="#spots">Skip to spots</a>
 
     <nav class="nav" aria-label="Primary navigation">
-      <div class="nav-links"><a class="active" aria-current="page" href="index.html">Spots</a>, <a href="history.html">History</a>, <a href="about.html">About</a></div>
+      <div class="nav-links"><a class="active" aria-current="page" href="index.html">Spots</a>, <a href="how-it-works.html">How it works</a>, <a href="history.html">History</a>, <a href="about.html">About</a></div>
     </nav>
 
     <nav class="content-nav" aria-label="Spots sections">
@@ -26,10 +26,8 @@
       <a href="#claim">Claim a spot</a>
     </nav>
 
-    <div class="spot-gallery" aria-label="12 available spots"><div class="spot-ring"></div></div>
-
     <main id="spots" class="spots">
-      <section id="reality" class="spot intro" data-nav="reality" aria-label="Reality">
+      <section id="reality" class="spot-section intro" data-nav="reality" aria-label="Reality">
         <h1>Apparently,<br />14 years of experience<br />aren't enough.</h1>
         <a class="presence" href="https://cloud.umami.is/share/83C7lwF3Wyao9hIR" target="_blank" rel="noopener" aria-label="Open live visitor statistics">
           <span aria-hidden="true"></span><span class="presence-copy">Loading live statistics…</span>
@@ -39,25 +37,29 @@
         <a class="down" href="#numbers" aria-label="Continue to numbers">↓</a>
       </section>
 
-      <section id="numbers" class="spot" data-nav="numbers">
+      <section id="numbers" class="spot-section" data-nav="numbers">
         <h2>412 applications.<br />24 interviews.<br />0 offers.</h2>
         <p class="detail">One made it to 5 rounds.<br />Another to 4.<br />Three more to 3.<br />The rest: 1–2 stages.</p>
         <p class="aside">And I'm still going.</p>
       </section>
 
-      <section id="experiment" class="spot" data-nav="experiment">
+      <section id="experiment" class="spot-section" data-nav="experiment">
         <h2>Why not do something<br />with all this traffic?</h2>
         <p class="detail">Every application brings someone new to my<br />portfolio — designers, marketers, recruiters,<br />hiring managers and people from the industry.</p>
         <p class="aside">Usually, they'd come here to see my work.</p>
       </section>
 
-      <section id="claim" class="spot final" data-nav="claim">
+      <section id="claim" class="spot-section final" data-nav="claim">
         <h2>This time, I decided to give<br />them something else to<br />look at.</h2>
         <div class="offer">
-          <h3>12 spots. 7 days.</h3>
+          <h3>12 spots.<br class="mobile-break" /> 7 days.</h3>
+          <a class="presence presence--mobile" href="https://cloud.umami.is/share/83C7lwF3Wyao9hIR" target="_blank" rel="noopener" aria-label="Open live visitor statistics">
+            <span aria-hidden="true"></span><span class="presence-copy">Loading live statistics…</span>
+          </a>
           <p>I'm opening 12 spots on this page for brands,<br />products, creators or anyone with something<br />worth showing.</p>
           <p>Pick a position.</p>
         </div>
+        <div class="spot-gallery" aria-label="12 available spots"><div class="spot-ring"></div></div>
         <div class="final-aside">
           <p>Something worth showing?<br />Put it here.</p>
           <p>I'll keep applying.</p>
@@ -88,7 +90,7 @@
         </label>
         <div class="payment">
           <p class="payment-title">Payment</p>
-          <p>Click the <a class="revolut-link" target="_blank" rel="noopener">Revolut link</a> — it opens the payment with the spot reference pre-filled.<br />Pay €25. The note <span class="payment-note">spot1</span> confirms which spot.<br />Return here after payment.</p>
+          <p>Click the <a class="revolut-link" target="_blank" rel="noopener">Revolut link</a> — it opens the payment with the spot reference pre-filled. The note <span class="payment-note">spot1</span> confirms which spot.<br /><br />Suggested price: €25.<br />Pay whatever you think this spot is worth.<br />Your amount will be public.<br /><br />Return here after payment.</p>
         </div>
         <label class="message-label reveal-after-payment" hidden>Message to the designer <span>Optional</span>
           <textarea name="message" placeholder="Anything you'd like to say."></textarea>
@@ -104,6 +106,6 @@
       <p class="live-copy">We'll let you know when it's live.</p>
     </section>
 
-    <script src="script.js?v=29"></script>
+    <script src="script.js?v=34"></script>
   </body>
 </html>

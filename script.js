@@ -4,13 +4,13 @@ const links = [...document.querySelectorAll('.nav a')];
 const contentLinks = [...document.querySelectorAll('.content-nav a')];
 const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const desktop = matchMedia('(min-width: 801px) and (min-height: 600px)');
-const presence = document.querySelector('.presence');
-const presenceCopy = presence?.querySelector('.presence-copy');
+const mobile = matchMedia('(max-width: 800px)');
+const presenceCopies = [...document.querySelectorAll('.presence-copy')];
 const analyticsShareId = '83C7lwF3Wyao9hIR';
 const analyticsGateway = 'https://gateway-eu.umami.is/api';
 
 async function updatePresence() {
-  if (!presenceCopy) return;
+  if (!presenceCopies.length) return;
   try {
     const share = await fetch(`${analyticsGateway}/share/${analyticsShareId}`).then(response => {
       if (!response.ok) throw new Error('Analytics share unavailable');
@@ -24,9 +24,10 @@ async function updatePresence() {
       fetch(`${analyticsGateway}/websites/${share.websiteId}/active`, { headers }).then(response => response.json()),
       fetch(`${analyticsGateway}/websites/${share.websiteId}/stats?startAt=${Date.parse('2026-09-13T00:00:00Z')}&endAt=${Date.now()}`, { headers }).then(response => response.json()),
     ]);
-    presenceCopy.textContent = `${Number(active.visitors || 0)} online now, ${Number(totals.visitors || 0).toLocaleString()} visitors`;
+    const copy = `${Number(active.visitors || 0)} online now, ${Number(totals.visitors || 0).toLocaleString()} visitors`;
+    presenceCopies.forEach(presenceCopy => { presenceCopy.textContent = copy; });
   } catch {
-    presenceCopy.textContent = 'Live statistics unavailable';
+    presenceCopies.forEach(presenceCopy => { presenceCopy.textContent = 'Live statistics unavailable'; });
   }
 }
 
@@ -44,6 +45,7 @@ sections.forEach(section => {
 const clamp = value => Math.max(0, Math.min(1, value));
 let enabled = false;
 let pending = false;
+let mobileStoryObserver;
 function render() {
   pending = false;
   const progress = enabled ? clamp(-main.getBoundingClientRect().top / (main.offsetHeight - innerHeight)) * (sections.length - 1) : 0;
@@ -56,8 +58,11 @@ function render() {
     section.style.setProperty('--line-shift', `${shift * 110}%`);
     section.style.setProperty('--copy-shift', `${shift * 28}px`);
     section.style.setProperty('--copy-opacity', enabled ? 1 - clamp((Math.abs(distance) - 0.18) / 0.32) : 1);
-    section.style.visibility = enabled && Math.abs(distance) > 0.8 ? 'hidden' : 'visible';
-    section.inert = enabled && index !== current;
+    // The gallery is viewport-pinned on desktop. Its mobile home is the final
+    // section, so that section must not be hidden while another copy is active.
+    const containsGallery = Boolean(section.querySelector('.spot-gallery'));
+    section.style.visibility = enabled && Math.abs(distance) > 0.8 && !containsGallery ? 'hidden' : 'visible';
+    section.inert = enabled && index !== current && !containsGallery;
     section.classList.toggle('is-visible', index === current);
   });
   contentLinks.forEach(link => {
@@ -69,6 +74,20 @@ function render() {
 function configure() {
   enabled = desktop.matches && !motion.matches;
   main.classList.toggle('scroll-story', enabled);
+  const useMobileStory = mobile.matches && !motion.matches;
+  main.classList.toggle('mobile-story', useMobileStory);
+
+  mobileStoryObserver?.disconnect();
+  if (useMobileStory) {
+    mobileStoryObserver = new IntersectionObserver(entries => {
+      entries.forEach(entry => {
+        if (entry.isIntersecting) entry.target.classList.add('has-entered');
+      });
+    }, { threshold: 0.16, rootMargin: '0px 0px -8% 0px' });
+    sections.forEach(section => mobileStoryObserver.observe(section));
+  } else {
+    sections.forEach(section => section.classList.add('has-entered'));
+  }
   render();
 }
 function goToHash(hash, smooth = true) {
@@ -96,6 +115,7 @@ window.addEventListener('resize', configure);
 window.addEventListener('hashchange', () => goToHash(location.hash));
 motion.addEventListener('change', configure);
 desktop.addEventListener('change', configure);
+mobile.addEventListener('change', configure);
 configure();
 if (location.hash) requestAnimationFrame(() => goToHash(location.hash, false));
 
@@ -109,8 +129,8 @@ const cards = Array.from({ length: spotCount }, (_, index) => {
   const card = document.createElement('a');
   card.className = 'spot-card';
   card.href = '#apply';
-  card.setAttribute('aria-label', `Spot ${index + 1} of ${spotCount}: Claim this spot for €25`);
-  card.innerHTML = '<svg viewBox="0 0 144 184" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="0" x2="144" y2="184" /></svg><span class="spot-claim">Claim this<br>spot<br>for €25</span>';
+  card.setAttribute('aria-label', `Spot ${index + 1} of ${spotCount}: Claim this spot`);
+  card.innerHTML = '<svg viewBox="0 0 144 184" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="0" x2="144" y2="184" /></svg><span class="spot-claim">Claim this<br>spot</span>';
   ring.append(card);
   return card;
 });
@@ -203,7 +223,7 @@ const logoPreview = document.querySelector('.logo-preview');
 const uploadPrompt = document.querySelector('.upload-prompt');
 const uploadError = document.querySelector('.upload-error');
 const thankYou = document.querySelector('.thank-you');
-const spotsApi = 'https://slots-api.zaetsmd.workers.dev';
+const spotsApi = '';
 
 function formatTimeRemaining(expiresAt) {
   const remaining = Math.max(0, new Date(expiresAt).getTime() - Date.now());
@@ -290,7 +310,7 @@ function showSubmitAfterReturn() {
   }
 }
 function animateSpotToUpload(origin, sourceCard) {
-  if (!origin || motion.matches) return;
+  if (!origin || motion.matches || mobile.matches) return;
   const target = document.querySelector('.upload-dropzone').getBoundingClientRect();
   const flight = sourceCard.cloneNode(true);
   flight.className = 'spot-flight';
@@ -325,7 +345,7 @@ function openForm(spot, origin) {
   paymentNote.textContent = `spot${spot}`;
   revolutLink.href = revolutUrl(spot);
   application.classList.add('is-open');
-  if (origin && !motion.matches) application.classList.add('is-animating');
+  if (origin && !motion.matches && !mobile.matches) application.classList.add('is-animating');
   application.setAttribute('aria-hidden', 'false');
   document.body.classList.add('application-active');
   animateSpotToUpload(origin, cards[spot - 1]);
@@ -344,7 +364,7 @@ function cancelSpotApplication() {
   const to = card.getBoundingClientRect();
   const flight = document.createElement('div');
   flight.className = 'spot-flight spot-return';
-  flight.innerHTML = departingCard?.innerHTML || '<svg viewBox="0 0 144 184" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="0" x2="144" y2="184" /></svg><span class="spot-claim">Claim this<br>spot<br>for €25</span>';
+  flight.innerHTML = departingCard?.innerHTML || '<svg viewBox="0 0 144 184" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="0" x2="144" y2="184" /></svg><span class="spot-claim">Claim this<br>spot</span>';
   Object.assign(flight.style, { left: `${from.left}px`, top: `${from.top}px`, width: `${from.width}px`, height: `${from.height}px`, opacity: '1', transform: 'none', zIndex: '31' });
   card.classList.add('is-returning');
   closeForm();

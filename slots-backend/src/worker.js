@@ -143,19 +143,29 @@ async function reviewApplication(request, env, applicationId, status) {
   const record = await env.DB.prepare('SELECT * FROM applications WHERE id = ?').bind(applicationId).first();
   if (!record || record.status !== 'pending') return json({ error: 'Application is no longer pending.' }, 404);
   const reviewedAt = now();
+  const body = await request.json().catch(() => ({}));
   if (status === 'publish') {
+    const amountCents = amountToCents(body.amount);
+    if (amountCents === null) return json({ error: 'Enter a valid approved amount, such as 25 or 25.50.' }, 400);
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
-    await env.DB.prepare(`UPDATE applications SET status = 'published', reviewed_at = ?, published_at = ?, expires_at = ? WHERE id = ?`)
-      .bind(reviewedAt, reviewedAt, expiresAt, applicationId).run();
+    await env.DB.prepare(`UPDATE applications SET status = 'published', reviewed_at = ?, published_at = ?, expires_at = ?, approved_amount_cents = ? WHERE id = ?`)
+      .bind(reviewedAt, reviewedAt, expiresAt, amountCents, applicationId).run();
     await notify(env, { to: record.email, subject: 'Spots — your logo is live', html: `<p>Your logo is now live on Spots for 7 days.</p><p>Thank you for taking part.</p>` });
     return json({ status: 'published', expiresAt });
   }
-  const body = await request.json().catch(() => ({}));
   const reason = text(body.reason, 1000) || 'We could not approve this submission for publication.';
-  await env.DB.prepare(`UPDATE applications SET status = 'rejected', reviewed_at = ?, rejected_reason = ? WHERE id = ?`)
-    .bind(reviewedAt, reason, applicationId).run();
+  await env.DB.prepare(`UPDATE applications SET status = 'rejected', reviewed_at = ?, rejected_at = ?, rejected_reason = ? WHERE id = ?`)
+    .bind(reviewedAt, reviewedAt, reason, applicationId).run();
   await notify(env, { to: record.email, subject: 'Spots — submission update', html: `<p>Thanks for your submission. Unfortunately, we can’t publish it.</p><p>${reason}</p>` });
   return json({ status: 'rejected' });
+}
+
+function amountToCents(value) {
+  const amount = typeof value === 'number' ? String(value) : text(value, 32).replace(',', '.');
+  if (!/^\d+(?:\.\d{1,2})?$/.test(amount)) return null;
+  const [whole, fraction = ''] = amount.split('.');
+  const cents = Number(whole) * 100 + Number(fraction.padEnd(2, '0'));
+  return Number.isSafeInteger(cents) && cents > 0 && cents <= 100000000 ? cents : null;
 }
 
 async function trackAndRedirect(request, env, applicationId) {
@@ -185,7 +195,7 @@ async function expireSpots(env) {
 }
 
 function adminPage() {
-  return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Spots admin</title><style>body{font-family:Arial,sans-serif;margin:2rem;max-width:1000px}input,button,textarea{font:inherit;padding:.6rem}button{cursor:pointer}table{border-collapse:collapse;width:100%;margin-top:2rem}th,td{text-align:left;border-bottom:1px solid #ddd;padding:.7rem;vertical-align:top}img{width:64px;height:64px;object-fit:contain}#login{max-width:360px}.hidden{display:none}.actions{display:flex;gap:.5rem;flex-wrap:wrap}</style><main><h1>Spots admin</h1><form id="login"><p>Enter the admin password.</p><input required type="password" name="password" autocomplete="current-password"><button>Open applications</button><p id="error"></p></form><section id="panel" class="hidden"><button id="logout">Log out</button><p id="status"></p><table><thead><tr><th>Spot</th><th>Logo</th><th>Applicant</th><th>Status</th><th>Action</th></tr></thead><tbody></tbody></table></section></main><script>const login=document.querySelector('#login'),panel=document.querySelector('#panel'),error=document.querySelector('#error'),body=document.querySelector('tbody'),status=document.querySelector('#status');async function load(){const r=await fetch('/api/admin/applications');if(r.status===401)return;const a=await r.json();login.classList.add('hidden');panel.classList.remove('hidden');body.innerHTML=a.map(x=>'<tr><td>#'+x.spot_number+'</td><td><a href="/logos/'+x.logo_key+'" target="_blank"><img src="/logos/'+x.logo_key+'"></a></td><td><a href="'+x.website+'" target="_blank">'+x.website+'</a><br>'+x.email+(x.message?'<br><em>'+x.message+'</em>':'')+'</td><td>'+x.status+'</td><td class="actions">'+(x.status==='pending'?'<button data-id="'+x.id+'" data-action="publish">Publish</button><button data-id="'+x.id+'" data-action="reject">Reject</button>':'—')+'</td></tr>').join('')}login.onsubmit=async e=>{e.preventDefault();const r=await fetch('/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:new FormData(login).get('password')})});if(!r.ok){error.textContent='Incorrect password.';return}await load()};body.onclick=async e=>{const b=e.target.closest('button[data-action]');if(!b)return;let reason='';if(b.dataset.action==='reject'){reason=prompt('Reason for rejection (optional):')??'';if(reason===null)return}const r=await fetch('/api/admin/applications/'+b.dataset.id+'/'+b.dataset.action,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({reason})});if(!r.ok){status.textContent='Could not update this application.';return}status.textContent='Updated.';await load()};document.querySelector('#logout').onclick=async()=>{await fetch('/api/admin/logout',{method:'POST'});location.reload()};load();</script>`;
+  return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Spots admin</title><style>body{font-family:Arial,sans-serif;margin:2rem;max-width:1200px}input,button,textarea{font:inherit;padding:.6rem}button{cursor:pointer}table{border-collapse:collapse;width:100%;margin-top:2rem}th,td{text-align:left;border-bottom:1px solid #ddd;padding:.7rem;vertical-align:top}img{width:64px;height:64px;object-fit:contain}#login{max-width:360px}.hidden{display:none}.actions{display:flex;gap:.5rem;flex-wrap:wrap}.date{white-space:nowrap;font-size:.9em}</style><main><h1>Spots admin</h1><form id="login"><p>Enter the admin password.</p><input required type="password" name="password" autocomplete="current-password"><button>Open applications</button><p id="error"></p></form><section id="panel" class="hidden"><button id="logout">Log out</button><p id="status"></p><table><thead><tr><th>Spot</th><th>Logo</th><th>Applicant</th><th>Status</th><th>Amount</th><th>Published / rejected (CEST)</th><th>Action</th></tr></thead><tbody></tbody></table></section></main><script>const login=document.querySelector('#login'),panel=document.querySelector('#panel'),error=document.querySelector('#error'),body=document.querySelector('tbody'),status=document.querySelector('#status');const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const amount=c=>Number.isInteger(c)?new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(c/100):'—';const cest=v=>v?new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',dateStyle:'medium',timeStyle:'medium',hour12:false}).format(new Date(v))+' CEST':'—';async function load(){const r=await fetch('/api/admin/applications');if(r.status===401)return;const a=await r.json();login.classList.add('hidden');panel.classList.remove('hidden');body.innerHTML=a.map(x=>'<tr><td>#'+x.spot_number+'</td><td><a href="/logos/'+encodeURIComponent(x.logo_key)+'" target="_blank"><img src="/logos/'+encodeURIComponent(x.logo_key)+'"></a></td><td><a href="'+esc(x.website)+'" target="_blank" rel="noopener">'+esc(x.website)+'</a><br>'+esc(x.email)+(x.message?'<br><em>'+esc(x.message)+'</em>':'')+'</td><td>'+esc(x.status)+'</td><td>'+amount(x.approved_amount_cents)+'</td><td class="date">'+cest(x.status==='published'?x.published_at:x.status==='rejected'?x.rejected_at:null)+'</td><td class="actions">'+(x.status==='pending'?'<button data-id="'+x.id+'" data-action="publish">Publish</button><button data-id="'+x.id+'" data-action="reject">Reject</button>':'—')+'</td></tr>').join('')}login.onsubmit=async e=>{e.preventDefault();const r=await fetch('/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:new FormData(login).get('password')})});if(!r.ok){error.textContent='Incorrect password.';return}await load()};body.onclick=async e=>{const b=e.target.closest('button[data-action]');if(!b)return;const payload={};if(b.dataset.action==='publish'){const amount=prompt('Approved amount in EUR (for example 25.00):');if(amount===null)return;payload.amount=amount}else{const reason=prompt('Reason for rejection (optional):');if(reason===null)return;payload.reason=reason}const r=await fetch('/api/admin/applications/'+b.dataset.id+'/'+b.dataset.action,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});const result=await r.json().catch(()=>({}));if(!r.ok){status.textContent=result.error||'Could not update this application.';return}status.textContent='Updated.';await load()};document.querySelector('#logout').onclick=async()=>{await fetch('/api/admin/logout',{method:'POST'});location.reload()};load();</script>`;
 }
 
 export default {
@@ -217,7 +227,7 @@ export default {
       if (!await isAdmin(request, env)) return json({ error: 'Unauthorized' }, 401);
       return reviewApplication(request, env, review[1], review[2]);
     }
-    return json({ error: 'Not found' }, 404);
+    return env.ASSETS.fetch(request);
   },
   async scheduled(_controller, env, ctx) { ctx.waitUntil(expireSpots(env)); }
 };

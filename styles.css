@@ -160,18 +160,21 @@ a { color: inherit; text-decoration: none; }
     display: flex;
     min-height: 100svh;
     flex-direction: column;
-    gap: 44px;
+    /* Keep every about-page block on the same text edge. The individual
+       margins below make the vertical rhythm explicit instead of letting a
+       desktop section offset leak into the mobile layout. */
+    gap: 0;
     padding: 32px 24px 92px;
     overflow: visible;
   }
   .about-page::after { position: absolute; top: 0; right: 0; left: 0; width: auto; height: 43%; bottom: auto; }
-  .about-page h1 { position: relative; top: auto; left: auto; width: auto; max-width: 100%; font-size: clamp(35px, 10.6vw, 48px); line-height: .98; }
-  .about-photo { position: relative; order: 2; top: auto; bottom: auto; left: auto; width: 100%; height: min(135vw, 560px); margin: 0; }
-  .about-copy { order: 3; }
-  .about-details { order: 4; display: block; padding: 0; }
-  .about-details section + section { margin-top: 44px; }
-  .about-details section:nth-child(2) { margin-bottom: 44px; }
-  .resume-link { display: inline-block; }
+  .about-page h1 { position: relative; top: auto; left: auto; width: auto; max-width: 100%; margin: 0 0 44px; font-size: clamp(35px, 10.6vw, 48px); line-height: .98; }
+  .about-photo { position: relative; order: 2; top: auto; bottom: auto; left: auto; width: 100%; height: min(135vw, 560px); margin: 0 0 44px; }
+  .about-copy { order: 3; width: 100%; margin: 0 0 64px; }
+  .about-details { order: 4; display: flex; width: 100%; flex-direction: column; align-items: flex-start; gap: 44px; padding: 0; }
+  .about-details section + section,
+  .about-details section:nth-child(2) { margin: 0; }
+  .resume-link { display: inline-block; margin-top: 0; }
 }
 
 /* History uses the same twelve-column canvas as the spots page. */
@@ -228,6 +231,58 @@ a { color: inherit; text-decoration: none; }
 }
 .history-copy p + p { margin-top: 28px; }
 
+/* How it works follows the same quiet, twelve-column editorial rhythm. */
+.how-page {
+  display: grid;
+  grid-template-columns: repeat(12, minmax(0, 1fr));
+  grid-template-rows: auto 1fr;
+  column-gap: var(--gutter);
+  height: 100svh;
+  padding: var(--margin-y) var(--margin-x);
+  overflow: hidden;
+}
+.how-intro { grid-column: 1 / span 5; grid-row: 1; }
+.how-steps {
+  font-size: 13px;
+  line-height: 20px;
+  letter-spacing: -.05em;
+}
+.how-intro h1 { font-size: 48px; line-height: 48px; letter-spacing: -.05em; }
+.how-steps {
+  grid-column: 1 / -1;
+  grid-row: 2;
+  align-self: center;
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: var(--gutter);
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+.how-steps li { position: relative; min-height: 355px; padding: 32px 24px; border: 1px solid var(--grey); }
+.how-steps li { opacity: 0; transform: translateY(18px); animation: how-card-in 680ms cubic-bezier(.16, 1, .3, 1) forwards; }
+.how-steps li:nth-child(1) { animation-delay: 120ms; }
+.how-steps li:nth-child(2) { animation-delay: 240ms; }
+.how-steps li:nth-child(3) { animation-delay: 360ms; }
+.how-steps li:nth-child(4) { animation-delay: 480ms; }
+@keyframes how-card-in {
+  from { opacity: 0; transform: translateY(18px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.how-number { display: block; margin-bottom: 20px; color: var(--grey); }
+.how-step-copy h2 { margin: 0; font-size: 48px; line-height: .96; letter-spacing: -.05em; font-weight: 500; }
+.how-step-copy p { margin-top: 28px; max-width: 255px; color: var(--black); }
+.how-step-copy a { text-decoration: underline; text-underline-offset: 2px; }
+.how-card { position: absolute; z-index: 1; bottom: -124px; left: 24px; width: 145px; height: 185px; display: flex; padding: 16px; border: 1px solid var(--grey); background: #fff; color: var(--grey); }
+.how-card strong { color: var(--black); font-weight: 500; }
+.how-card--claim { align-items: center; justify-content: center; color: var(--black); text-align: center; }
+.how-card--claim::before, .how-card--claim::after { content: ''; position: absolute; width: 62px; height: 1px; background: var(--grey); transform: rotate(48deg); }
+.how-card--claim::before { top: 24px; left: -7px; }
+.how-card--claim::after { right: -7px; bottom: 24px; }
+.how-card--price, .how-card--logo { justify-content: space-between; }
+.how-card--review { flex-direction: column; justify-content: space-between; align-items: flex-start; padding: 24px; text-align: left; }
+.how-card--logo b { position: absolute; top: 70px; left: 24px; color: var(--black); font-size: 22px; line-height: 23px; letter-spacing: -.05em; font-weight: 500; }
+
 .content-nav {
   position: fixed;
   z-index: 2;
@@ -264,6 +319,7 @@ a { color: inherit; text-decoration: none; }
 }
 
 h1, h2, h3, p { margin: 0; font: inherit; }
+.mobile-break { display: none; }
 h1, h2 {
   grid-column: 1 / span 7;
   align-self: start;
@@ -279,6 +335,7 @@ h1, h2 {
   letter-spacing: -.05em;
 }
 .presence { grid-column: 1 / span 4; align-self: start; margin-top: 32px; color: inherit; text-decoration: none; }
+.presence--mobile { display: none; }
 .presence:hover, .presence:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
 .presence > span:first-child { display: inline-block; width: 5px; height: 5px; margin: 0 4px 1px 0; background: var(--green); border-radius: 50%; animation: presence-pulse 1.7s ease-in-out infinite; }
 @keyframes presence-pulse { 50% { opacity: .2; } }
@@ -314,30 +371,52 @@ h1, h2 {
 .scroll-story { height: 460svh; }
 .scroll-story .scroll-stage { position: sticky; top: 0; height: 100svh; }
 .scroll-story .spot-section { position: absolute; inset: 0; height: 100%; min-height: 0; grid-template-rows: auto 1fr auto; }
+.scroll-story .spot-gallery { visibility: visible; }
 .scroll-story h1, .scroll-story h2 { grid-row: 1; }
 .scroll-story .presence { grid-row: 2; }
 .scroll-story .detail, .scroll-story .aside, .scroll-story .down,
 .scroll-story .offer, .scroll-story .final-aside { grid-row: 3; }
 .scroll-story .line { overflow: hidden; padding-bottom: .1em; margin-bottom: -.1em; }
 .scroll-story .line > span { transform: translateY(var(--line-shift)); will-change: transform; }
-.scroll-story .spot-section > :not(h1):not(h2) { opacity: var(--copy-opacity); translate: 0 var(--copy-shift); }
+.scroll-story .spot-section > :not(h1):not(h2):not(.spot-gallery) { opacity: var(--copy-opacity); translate: 0 var(--copy-shift); }
 
 @media (max-width: 800px) {
   :root { --margin-x: 24px; --margin-y: 32px; --gutter: 12px; }
-  .nav { top: auto; right: 24px; bottom: 24px; left: 24px; display: block; padding: 9px 12px; width: max-content; max-width: calc(100% - 48px); background: #fff; border: 1px solid var(--grey); }
+  .nav { top: auto; right: 24px; bottom: max(20px, env(safe-area-inset-bottom)); left: 24px; display: block; padding: 9px 12px; width: max-content; max-width: calc(100% - 48px); background: #fff; border: 1px solid var(--grey); }
   .nav-links { display: block; }
-  .content-nav { top: auto; right: 24px; bottom: 84px; left: 24px; grid-template-columns: 1fr; }
-  .content-nav a { grid-column: 1; }
-  .spot-section { min-height: 100svh; grid-template-columns: repeat(4, 1fr); gap: 12px; padding-bottom: 86px; }
+  /* The desktop scroll-story controls are decorative at this size. Keeping
+     them fixed covered the carousel and the page menu on short phones. */
+  .content-nav { display: none; }
+  .scroll-stage { display: flex; flex-direction: column; }
+  .scroll-stage > .spot-section:not(.final) { display: none; }
+  .spot-section { display: flex; min-height: auto; flex-direction: column; align-items: stretch; gap: 28px; padding: 32px 24px 112px; overflow: visible; }
+  .spot-section.intro { min-height: 100svh; }
+  .spot-section.final { order: -1; gap: 28px; padding-top: 32px; }
+  .final > h2, .final .offer p:first-of-type { display: none; }
   h1, h2 { grid-column: 1 / -1; font-size: clamp(35px, 10.6vw, 48px); line-height: .98; }
-  .presence { grid-column: 1 / -1; margin-top: 32px; }
-  .detail { grid-column: 1 / -1; align-self: end; }
-  .aside { grid-column: 1 / -1; align-self: end; margin-bottom: 68px; }
+  .presence { margin-top: 0; }
+  .detail, .aside { align-self: auto; margin: 0; }
+  .intro .aside { margin-top: 12px; }
   .down { display: none; }
-  .offer { grid-column: 1 / -1; margin-bottom: 54px; }
-  .offer h3 { font-size: clamp(35px, 10.6vw, 48px); line-height: .98; }
+  .offer { align-self: stretch; margin: 0; }
+  .offer h3 { margin-bottom: 24px; font-size: clamp(35px, 10.6vw, 48px); line-height: .98; }
+  .presence--mobile { display: block; margin: 0 0 24px; }
+  .mobile-break { display: block; }
   .final-aside { display: none; }
-  .back { bottom: 31px; left: auto; right: 24px; transform: none; }
+  .back { display: none; }
+
+  /* Mobile keeps the content in the document flow, but each story beat still
+     arrives with the same measured pacing as the desktop scroll narrative. */
+  .mobile-story .spot-section > * {
+    opacity: 0;
+    translate: 0 18px;
+    transition: opacity 520ms cubic-bezier(.16, 1, .3, 1), translate 520ms cubic-bezier(.16, 1, .3, 1);
+  }
+  .mobile-story .spot-section.has-entered > * { opacity: 1; translate: 0 0; }
+  .mobile-story .spot-section > :nth-child(2) { transition-delay: 70ms; }
+  .mobile-story .spot-section > :nth-child(3) { transition-delay: 130ms; }
+  .mobile-story .spot-section > :nth-child(4) { transition-delay: 190ms; }
+  .mobile-story .spot-section > :nth-child(5) { transition-delay: 250ms; }
   .history-page {
     grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 12px;
@@ -347,6 +426,11 @@ h1, h2 {
   .history-empty { grid-template-columns: 1fr; grid-column: 1 / -1; gap: 3px; font-size: clamp(35px, 10.6vw, 48px); line-height: .98; }
   .history-empty span:nth-child(n) { grid-column: auto; }
   .history-copy { grid-column: 1 / -1; }
+  .how-page { display: flex; height: auto; min-height: 100svh; flex-direction: column; gap: 44px; padding: 32px 24px 160px; overflow: visible; }
+  .how-intro h1 { font-size: clamp(35px, 10.6vw, 48px); line-height: .98; }
+  .how-steps { display: flex; flex-direction: column; gap: 104px; }
+  .how-steps li { min-height: 330px; padding: 24px; }
+  .how-step-copy h2 { font-size: clamp(35px, 10.6vw, 48px); }
 }
 
 .logo-preview[hidden] { display: none; }
@@ -356,6 +440,7 @@ h1, h2 {
   .spot-section > :not(h1):not(h2) { transition: none; }
   .history-empty span { opacity: 1; animation: none; }
   .about-page h1, .about-copy, .about-details section, .resume-link, .about-photo img { opacity: 1; animation: none; }
+  .how-steps li { opacity: 1; transform: none; animation: none; }
   .about-photo { transform: none; transition: none; }
   .about-photo::after { display: none; }
 }
@@ -421,7 +506,7 @@ body.thank-you-active .spots { visibility: hidden; }
 .spot-flight::after { position: absolute; inset: -20%; content: ""; border-top: 1px solid #c8c8c8; transform: rotate(52deg); transform-origin: center; }
 .spot-flight span { position: relative; z-index: 1; padding: 10px 8px; background: #fff; font-size: 13px; line-height: 20px; letter-spacing: -.05em; text-align: center; }
 .upload-prompt { font-size: 48px; line-height: .99; letter-spacing: -.07em; text-align: center; }
-.logo-preview { display: block; max-width: 278px; max-height: calc(100% - 48px); object-fit: contain; }
+.logo-preview { display: block; width: 278px; height: 278px; max-width: 100%; max-height: 100%; object-fit: contain; }
 .upload-error { max-width: 278px; padding: 12px; font-size: 13px; line-height: 20px; letter-spacing: -.05em; text-align: center; }
 .application-form { position: relative; width: 100%; align-self: center; }
 .application-form h1 { margin-bottom: 23px; font-size: 48px; line-height: .98; letter-spacing: -.07em; }
@@ -446,7 +531,7 @@ body.thank-you-active .spots { visibility: hidden; }
 .thank-you.is-open { background: transparent; }
 .thank-you .pending-card { display: none; }
 .spot-card.is-returning { opacity: 0 !important; }
-.spot-return img { display: block; max-width: 278px; max-height: calc(100% - 48px); object-fit: contain; }
+.spot-return img { display: block; width: 278px; height: 278px; max-width: 100%; max-height: 100%; object-fit: contain; }
 .thank-you h1 { grid-column: 1 / span 5; font-size: 48px; line-height: .98; letter-spacing: -.07em; }
 .pending-card { grid-column: 7 / span 2; align-self: center; width: 145px; height: 186px; padding: 24px; border: 1px solid #c8c8c8; display: flex; flex-direction: column; justify-content: space-between; font-size: 13px; line-height: 20px; letter-spacing: -.05em; }
 .pending-card strong { font: inherit; }
@@ -456,7 +541,7 @@ body.thank-you-active .spots { visibility: hidden; }
 
 @media (max-width: 800px) {
   .application { display: none; grid-template-columns: 1fr; gap: 32px; align-content: start; padding: 78px 24px 36px; }
-  .application.is-open { display: block; }
+  .application.is-open { display: block; height: 100dvh; overflow-y: scroll; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
   .application-upload { max-width: 456px; margin: 0 auto 32px; }
   .upload-dropzone { aspect-ratio: 1 / 1; }
   .upload-prompt, .application-form h1, .thank-you h1 { font-size: clamp(36px, 11vw, 48px); }
@@ -485,7 +570,7 @@ body.thank-you-active .spots { visibility: hidden; }
 .spot-pending { width: 100%; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; padding: 24px; background: #fff; color: #c8c8c8; font-size: 13px; line-height: 20px; letter-spacing: -.05em; text-align: left; }
 .spot-pending strong { color: #000; font: inherit; }
 .spot-card.is-live { background: #fff; overflow: hidden; }
-.spot-card.is-live img { display: block; width: calc(100% - 32px); height: calc(100% - 66px); object-fit: contain; }
+.spot-card.is-live img { display: block; width: 97px; height: 97px; object-fit: contain; }
 .spot-preview-logo { display: grid; place-items: center; width: calc(100% - 32px); height: calc(100% - 66px); font-size: 26px; line-height: 1; letter-spacing: -.08em; text-align: center; }
 .spot-preview-logo--1 { font-size: 34px; font-family: Georgia, serif; font-style: italic; letter-spacing: -.12em; }
 .spot-preview-logo--2 { font-size: 20px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
@@ -503,11 +588,20 @@ body.thank-you-active .spots { visibility: hidden; }
 .spot-card:hover .spot-claim, .spot-card:focus-visible .spot-claim { opacity: 1; }
 .spot-card:focus-visible { outline: 2px solid #000; outline-offset: 5px; }
 @media (max-width: 800px) {
-  .spot-gallery { top: 38% !important; right: 0 !important; bottom: auto !important; left: 0 !important; width: 100vw; height: 270px; overflow-x: auto; overscroll-behavior-x: contain; touch-action: pan-x pan-y; scrollbar-width: thin; scroll-snap-type: x mandatory; }
-  .spot-ring { display: flex; align-items: center; gap: 22px; width: max-content; padding: 20px 24px; transform: none !important; }
+  /* On phones the spots belong to the opening section instead of floating
+     over every section. This gives the carousel a real, predictable block. */
+  .spot-gallery { position: relative !important; inset: auto !important; width: calc(100% + 48px); height: 224px; margin: 0 -24px; overflow-x: auto; overscroll-behavior-x: contain; touch-action: pan-x pan-y; scrollbar-width: thin; scroll-snap-type: x mandatory; }
+  .spot-ring { display: flex; align-items: center; gap: 22px; width: max-content; min-width: 100%; height: 100%; padding: 20px 24px; transform: none !important; }
   .spot-card { position: relative; left: auto; top: auto; flex: 0 0 144px; scroll-snap-align: center; transform: none !important; opacity: 1 !important; }
   .spot-card:nth-child(even) { margin-top: 28px; }
   .spot-claim { opacity: 1; }
+
+  /* The mobile entry point is a compact, browseable claim board. The same
+     cards remain viewport-pinned and animated by the desktop composition. */
+  .final .spot-gallery { width: 100%; height: auto; margin: 0; overflow: visible; scroll-snap-type: none; }
+  .final .spot-ring { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 12px; width: 100%; min-width: 0; height: auto; padding: 0 0 84px; }
+  .final .spot-card { width: 100%; height: auto; min-width: 0; aspect-ratio: 144 / 184; margin: 0; }
+  .final .spot-card:nth-child(even) { margin-top: 0; }
 }
 @media (prefers-reduced-motion: reduce) {
   .spot-card { will-change: auto; }
