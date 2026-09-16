@@ -6,6 +6,6 @@ positions.forEach(([x, y, r], index) => {
   const card = document.createElement('div');
   card.className = index + 1 === spot ? 'card pending' : 'card';
   card.style.cssText += index + 1 === spot ? 'left:50%;top:45%' : `left:${x}%;top:${y}%;--r:${r}deg`;
-  if (index + 1 === spot) card.innerHTML = `<span>#${spot}</span>${logo ? `<img src="${logo}" alt="Uploaded logo" />` : ''}<strong>Under review</strong>`;
+  if (index + 1 === spot) card.innerHTML = `<span><span class="spot-word">Spot </span>#${spot}</span>${logo ? `<img src="${logo}" alt="Uploaded logo" />` : ''}<strong>Under review</strong>`;
   ring.append(card);
 });

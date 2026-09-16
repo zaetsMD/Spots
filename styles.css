@@ -600,6 +600,7 @@ body.thank-you-active .spots { visibility: hidden; }
   .spot-card { position: relative; left: auto; top: auto; flex: 0 0 144px; scroll-snap-align: center; transform: none !important; opacity: 1 !important; }
   .spot-card:nth-child(even) { margin-top: 28px; }
   .spot-claim { opacity: 1; }
+  .spot-word { display: none; }
 
   /* Keep live brand marks clear of the card header and countdown in the
      three-column mobile board. */
