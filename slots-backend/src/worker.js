@@ -139,7 +139,7 @@ async function submitApplication(request, env) {
   await notify(env, {
     to: email,
     subject: `Spot #${spot} — we received your submission`,
-    html: `<p>Thank you for your submission.</p><p>We’ll verify your payment and review the content. Your logo and link will be published within 12 hours when approved. If it isn’t safe or appropriate to publish, we’ll let you know.</p><p>We’ll email you again when it is live.</p>${applicantEmailFooter()}`
+    html: `<p>Thank you so much for your submission – this means a lot!</p><p>We’ll verify your payment and review the content.</p><p>If everything looks good and there’s nothing unsafe or inappropriate to publish, your logo and link will go live within the next 12 hours.</p><p>We’ll email you as soon as it’s live.</p>${applicantEmailFooter()}`
   });
   return json({ id: applicationId, status: 'pending' }, 201);
 }
@@ -165,6 +165,37 @@ async function reviewApplication(request, env, applicationId, status) {
   return json({ status: 'rejected' });
 }
 
+async function createAdminApplication(request, env) {
+  const form = await request.formData();
+  const spot = Number(form.get('spot'));
+  const website = normalizedWebsite(form.get('website'));
+  const email = validEmail(form.get('email'));
+  const message = text(form.get('message')) || null;
+  const amountCents = amountToCents(form.get('amount'));
+  const logo = form.get('logo');
+  if (!Number.isInteger(spot) || spot < 1 || spot > 12 || !website || !email || !(logo instanceof File) || amountCents === null) return json({ error: 'Provide a valid spot, website, email, logo and positive amount.' }, 400);
+  if (!ALLOWED_TYPES.has(logo.type) || logo.size > MAX_LOGO_BYTES) return json({ error: 'Logo must be PNG, JPG, WEBP, GIF or SVG and at most 5 MB.' }, 400);
+  const publishedAt = now();
+  const occupied = await env.DB.prepare(`SELECT id FROM applications WHERE spot_number = ? AND (status = 'pending' OR (status = 'published' AND expires_at > ?))`).bind(spot, publishedAt).first();
+  if (occupied) return json({ error: 'This spot is currently occupied.' }, 409);
+  const applicationId = id();
+  const logoKey = `${applicationId}.${logo.type === 'image/svg+xml' ? 'svg' : logo.type.split('/')[1].replace('jpeg', 'jpg')}`;
+  const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
+  await env.LOGOS.put(logoKey, logo.stream(), { httpMetadata: { contentType: logo.type } });
+  try { await env.DB.prepare(`INSERT INTO applications (id, spot_number, website, email, message, logo_key, logo_content_type, status, created_at, reviewed_at, published_at, expires_at, approved_amount_cents) VALUES (?, ?, ?, ?, ?, ?, ?, 'published', ?, ?, ?, ?, ?)`).bind(applicationId, spot, website, email, message, logoKey, logo.type, publishedAt, publishedAt, publishedAt, expiresAt, amountCents).run(); }
+  catch (error) { await env.LOGOS.delete(logoKey); throw error; }
+  return json({ id: applicationId, status: 'published', expiresAt }, 201);
+}
+
+async function removeApplication(env, applicationId) {
+  const record = await env.DB.prepare('SELECT logo_key FROM applications WHERE id = ?').bind(applicationId).first();
+  if (!record) return json({ error: 'Application not found.' }, 404);
+  await env.DB.prepare('DELETE FROM clicks WHERE application_id = ?').bind(applicationId).run();
+  await env.DB.prepare('DELETE FROM applications WHERE id = ?').bind(applicationId).run();
+  await env.LOGOS.delete(record.logo_key);
+  return json({ ok: true });
+}
+
 function amountToCents(value) {
   const amount = typeof value === 'number' ? String(value) : text(value, 32).replace(',', '.');
   if (!/^\d+(?:\.\d{1,2})?$/.test(amount)) return null;
@@ -184,7 +215,11 @@ async function trackAndRedirect(request, env, applicationId) {
     .bind(clickId, applicationId, visitorHash, now()).run();
   await env.DB.prepare('UPDATE applications SET total_clicks = total_clicks + 1, unique_clicks = unique_clicks + ? WHERE id = ?')
     .bind(inserted.meta.changes ? 1 : 0, applicationId).run();
-  return Response.redirect(record.website, 302);
+  const destination = new URL(record.website);
+  destination.searchParams.set('utm_source', 'spots');
+  destination.searchParams.set('utm_medium', 'sponsor');
+  destination.searchParams.set('utm_campaign', `spot${record.spot_number}`);
+  return Response.redirect(destination.toString(), 302);
 }
 
 async function expireSpots(env) {
@@ -194,13 +229,13 @@ async function expireSpots(env) {
     await notify(env, {
       to: record.email,
       subject: `Spot #${record.spot_number} — thank you for being part of the experiment`,
-      html: `<p>You were a part of the experiment, and that means a lot. Thank you, thank you, and once again thank you.</p><p>Your link was clicked <strong>${record.total_clicks}</strong> times: <strong>${record.unique_clicks}</strong> unique visitors and <strong>${record.total_clicks - record.unique_clicks}</strong> repeat clicks.</p><p>Want the same spot for one more week? Pay again using the Revolut link for spot ${record.spot_number}.</p>${applicantEmailFooter()}`
+      html: `<p>You were a part of the experiment, and that means a lot. Thank you, thank you, and once again thank you.</p><p>Your link was clicked <strong>${record.total_clicks}</strong> times: <strong>${record.unique_clicks}</strong> unique visitors and <strong>${record.total_clicks - record.unique_clicks}</strong> repeat clicks.</p>${applicantEmailFooter()}`
     });
   }
 }
 
 function adminPage() {
-  return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Spots admin</title><style>body{font-family:Arial,sans-serif;margin:2rem;max-width:1200px}input,button,textarea{font:inherit;padding:.6rem}button{cursor:pointer}table{border-collapse:collapse;width:100%;margin-top:2rem}th,td{text-align:left;border-bottom:1px solid #ddd;padding:.7rem;vertical-align:top}img{width:64px;height:64px;object-fit:contain}#login{max-width:360px}.hidden{display:none}.actions{display:flex;gap:.5rem;flex-wrap:wrap}.date{white-space:nowrap;font-size:.9em}</style><main><h1>Spots admin</h1><form id="login"><p>Enter the admin password.</p><input required type="password" name="password" autocomplete="current-password"><button>Open applications</button><p id="error"></p></form><section id="panel" class="hidden"><button id="logout">Log out</button><p id="status"></p><table><thead><tr><th>Spot</th><th>Logo</th><th>Applicant</th><th>Status</th><th>Amount</th><th>Published / rejected (CEST)</th><th>Action</th></tr></thead><tbody></tbody></table></section></main><script>const login=document.querySelector('#login'),panel=document.querySelector('#panel'),error=document.querySelector('#error'),body=document.querySelector('tbody'),status=document.querySelector('#status');const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const amount=c=>Number.isInteger(c)?new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(c/100):'—';const cest=v=>v?new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',dateStyle:'medium',timeStyle:'medium',hour12:false}).format(new Date(v))+' CEST':'—';async function load(){const r=await fetch('/api/admin/applications');if(r.status===401)return;const a=await r.json();login.classList.add('hidden');panel.classList.remove('hidden');body.innerHTML=a.map(x=>'<tr><td>#'+x.spot_number+'</td><td><a href="/logos/'+encodeURIComponent(x.logo_key)+'" target="_blank"><img src="/logos/'+encodeURIComponent(x.logo_key)+'"></a></td><td><a href="'+esc(x.website)+'" target="_blank" rel="noopener">'+esc(x.website)+'</a><br>'+esc(x.email)+(x.message?'<br><em>'+esc(x.message)+'</em>':'')+'</td><td>'+esc(x.status)+'</td><td>'+amount(x.approved_amount_cents)+'</td><td class="date">'+cest(x.status==='published'?x.published_at:x.status==='rejected'?x.rejected_at:null)+'</td><td class="actions">'+(x.status==='pending'?'<button data-id="'+x.id+'" data-action="publish">Publish</button><button data-id="'+x.id+'" data-action="reject">Reject</button>':'—')+'</td></tr>').join('')}login.onsubmit=async e=>{e.preventDefault();const r=await fetch('/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:new FormData(login).get('password')})});if(!r.ok){error.textContent='Incorrect password.';return}await load()};body.onclick=async e=>{const b=e.target.closest('button[data-action]');if(!b)return;const payload={};if(b.dataset.action==='publish'){const amount=prompt('Approved amount in EUR (for example 25.00):');if(amount===null)return;payload.amount=amount}else{const reason=prompt('Reason for rejection (optional):');if(reason===null)return;payload.reason=reason}const r=await fetch('/api/admin/applications/'+b.dataset.id+'/'+b.dataset.action,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});const result=await r.json().catch(()=>({}));if(!r.ok){status.textContent=result.error||'Could not update this application.';return}status.textContent='Updated.';await load()};document.querySelector('#logout').onclick=async()=>{await fetch('/api/admin/logout',{method:'POST'});location.reload()};load();</script>`;
+  return `<!doctype html><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Spots admin</title><style>body{font-family:Arial,sans-serif;margin:2rem;max-width:1200px}input,button,textarea{font:inherit;padding:.6rem}button{cursor:pointer}table{border-collapse:collapse;width:100%;margin-top:2rem}th,td{text-align:left;border-bottom:1px solid #ddd;padding:.7rem;vertical-align:top}img{width:64px;height:64px;object-fit:contain}#login{max-width:360px}.hidden{display:none}.actions{display:flex;gap:.5rem;flex-wrap:wrap}.date{white-space:nowrap;font-size:.9em}</style><main><h1>Spots admin</h1><form id="login"><p>Enter the admin password.</p><input required type="password" name="password" autocomplete="current-password"><button>Open applications</button><p id="error"></p></form><section id="panel" class="hidden"><button id="logout">Log out</button><p id="status"></p><table><thead><tr><th>Spot</th><th>Logo</th><th>Applicant</th><th>Status</th><th>Amount</th><th>Clicks</th><th>Published / rejected (CEST)</th><th>Action</th></tr></thead><tbody></tbody></table></section></main><script>const login=document.querySelector('#login'),panel=document.querySelector('#panel'),error=document.querySelector('#error'),body=document.querySelector('tbody'),status=document.querySelector('#status');const esc=v=>String(v??'').replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));const amount=c=>Number.isInteger(c)?new Intl.NumberFormat('de-DE',{style:'currency',currency:'EUR'}).format(c/100):'—';const cest=v=>v?new Intl.DateTimeFormat('en-GB',{timeZone:'Europe/Berlin',dateStyle:'medium',timeStyle:'medium',hour12:false}).format(new Date(v))+' CEST':'—';async function load(){const r=await fetch('/api/admin/applications');if(r.status===401)return;const a=await r.json();login.classList.add('hidden');panel.classList.remove('hidden');body.innerHTML=a.map(x=>'<tr><td>#'+x.spot_number+'</td><td><a href="/logos/'+encodeURIComponent(x.logo_key)+'" target="_blank"><img src="/logos/'+encodeURIComponent(x.logo_key)+'"></a></td><td><a href="'+esc(x.website)+'" target="_blank" rel="noopener">'+esc(x.website)+'</a><br>'+esc(x.email)+(x.message?'<br><em>'+esc(x.message)+'</em>':'')+'</td><td>'+esc(x.status)+'</td><td>'+amount(x.approved_amount_cents)+'</td><td>'+x.total_clicks+' total<br>'+x.unique_clicks+' unique visitor-days</td><td class="date">'+cest(x.status==='published'?x.published_at:x.status==='rejected'?x.rejected_at:null)+'</td><td class="actions">'+(x.status==='pending'?'<button data-id="'+x.id+'" data-action="publish">Publish</button><button data-id="'+x.id+'" data-action="reject">Reject</button>':'—')+'</td></tr>').join('')}login.onsubmit=async e=>{e.preventDefault();const r=await fetch('/api/admin/login',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({password:new FormData(login).get('password')})});if(!r.ok){error.textContent='Incorrect password.';return}await load()};body.onclick=async e=>{const b=e.target.closest('button[data-action]');if(!b)return;const payload={};if(b.dataset.action==='publish'){const amount=prompt('Approved amount in EUR (for example 25.00):');if(amount===null)return;payload.amount=amount}else{const reason=prompt('Reason for rejection (optional):');if(reason===null)return;payload.reason=reason}const r=await fetch('/api/admin/applications/'+b.dataset.id+'/'+b.dataset.action,{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify(payload)});const result=await r.json().catch(()=>({}));if(!r.ok){status.textContent=result.error||'Could not update this application.';return}status.textContent='Updated.';await load()};document.querySelector('#logout').onclick=async()=>{await fetch('/api/admin/logout',{method:'POST'});location.reload()};load();</script>`;
 }
 
 export default {
@@ -226,6 +261,15 @@ export default {
       if (!await isAdmin(request, env)) return json({ error: 'Unauthorized' }, 401);
       const applications = await env.DB.prepare('SELECT * FROM applications ORDER BY created_at DESC').all();
       return json(applications.results);
+    }
+    if (url.pathname === '/api/admin/applications' && request.method === 'POST') {
+      if (!await isAdmin(request, env)) return json({ error: 'Unauthorized' }, 401);
+      return createAdminApplication(request, env);
+    }
+    const remove = url.pathname.match(/^\/api\/admin\/applications\/([^/]+)$/);
+    if (remove && request.method === 'DELETE') {
+      if (!await isAdmin(request, env)) return json({ error: 'Unauthorized' }, 401);
+      return removeApplication(env, remove[1]);
     }
     const review = url.pathname.match(/^\/api\/admin\/applications\/([^/]+)\/(publish|reject)$/);
     if (review && request.method === 'POST') {

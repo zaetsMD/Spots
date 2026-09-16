@@ -270,7 +270,7 @@ a { color: inherit; text-decoration: none; }
   to { opacity: 1; transform: translateY(0); }
 }
 .how-number { display: block; margin-bottom: 20px; color: var(--grey); }
-.how-step-copy h2 { margin: 0; font-size: 48px; line-height: .96; letter-spacing: -.05em; font-weight: 500; }
+.how-step-copy h2 { margin: 0; font-size: 32px; line-height: .96; letter-spacing: -.05em; font-weight: 500; }
 .how-step-copy p { margin-top: 28px; max-width: 255px; color: var(--black); }
 .how-step-copy a { text-decoration: underline; text-underline-offset: 2px; }
 .how-card { position: absolute; z-index: 1; bottom: -124px; left: 24px; width: 145px; height: 185px; display: flex; padding: 16px; border: 1px solid var(--grey); background: #fff; color: var(--grey); }
@@ -431,7 +431,7 @@ h1, h2 {
   .how-intro h1 { font-size: clamp(35px, 10.6vw, 48px); line-height: .98; }
   .how-steps { display: flex; flex-direction: column; gap: 104px; }
   .how-steps li { min-height: 330px; padding: 24px; }
-  .how-step-copy h2 { font-size: clamp(35px, 10.6vw, 48px); }
+  .how-step-copy h2 { font-size: 32px; }
 }
 
 .logo-preview[hidden] { display: none; }
@@ -527,7 +527,7 @@ body.thank-you-active .spots { visibility: hidden; }
 .payment-title { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #c8c8c8; }
 .revolut-link { text-decoration: underline; text-underline-offset: 3px; }
 .revolut-link { cursor: pointer; }
-.submit-application { position: absolute; right: calc(-1 * clamp(130px, 12vw, 174px)); bottom: -17px; border: 0; background: transparent; padding: 0; color: #000; font: inherit; font-size: 48px; line-height: 1; letter-spacing: -.07em; cursor: pointer; }
+.submit-application { position: absolute; left: 0; bottom: -33px; border: 0; background: transparent; padding: 0; color: #000; font: inherit; font-size: 48px; line-height: 1; letter-spacing: -.07em; cursor: pointer; }
 .submit-application:hover, .submit-application:focus-visible { text-decoration: underline; text-underline-offset: 4px; }
 .thank-you { grid-template-columns: repeat(12, minmax(0, 1fr)); column-gap: var(--gutter); grid-template-rows: auto 1fr auto; padding: var(--margin-y) var(--margin-x); }
 .thank-you.is-open { background: transparent; }
@@ -549,7 +549,8 @@ body.thank-you-active .spots { visibility: hidden; }
   .upload-prompt, .application-form h1, .thank-you h1 { font-size: clamp(36px, 11vw, 48px); }
   .application-form { max-width: 456px; margin: 0 auto; }
   .application-close { top: 26px; right: 20px; }
-  .submit-application { position: static; display: block; margin: 32px 0 0 auto; font-size: 40px; }
+  .application-form input, .application-form textarea { font-size: 16px; }
+  .submit-application { position: static; display: block; margin: 48px 0 0; font-size: 40px; }
   .thank-you { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto auto; gap: 28px; padding: 32px 24px; }
   .thank-you h1, .pending-card, .review-copy, .live-copy { grid-column: 1; }
   .pending-card { justify-self: center; align-self: center; }
