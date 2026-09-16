@@ -85,7 +85,7 @@ async function notify(env, payload) {
 }
 
 async function activeSpots(env) {
-  const result = await env.DB.prepare(`SELECT id, spot_number, website, logo_key, published_at, expires_at, total_clicks, status
+  const result = await env.DB.prepare(`SELECT id, spot_number, website, logo_key, published_at, expires_at, total_clicks, status, approved_amount_cents
     FROM applications WHERE status = 'pending' OR (status = 'published' AND expires_at > ?) ORDER BY spot_number`).bind(now()).all();
   return result.results.map(row => ({
     id: row.id,

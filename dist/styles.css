@@ -587,7 +587,7 @@ body.thank-you-active .spots { visibility: hidden; }
 .spot-preview-logo--9 { font-size: 29px; font-style: italic; letter-spacing: -.12em; }
 .spot-preview-logo--10 { font-size: 18px; font-weight: 700; letter-spacing: .12em; text-transform: uppercase; }
 .spot-preview-logo--11 { font-size: 30px; font-family: Georgia, serif; font-style: italic; letter-spacing: -.12em; }
-.spot-countdown { position: absolute; right: 0; bottom: 14px; left: 0; color: #aaa; font-size: 12px; line-height: 1; text-align: center; }
+.spot-countdown { position: absolute; right: 0; bottom: 14px; left: 0; color: #aaa; font-family: Inter, Arial, sans-serif; font-size: 13px; font-weight: 500; line-height: 13px; letter-spacing: -.05em; text-align: center; }
 .spot-card:hover, .spot-card:focus-visible { opacity: 1 !important; z-index: 20 !important; background: #fff; }
 .spot-card:hover .spot-claim, .spot-card:focus-visible .spot-claim { opacity: 1; }
 .spot-card:focus-visible { outline: 2px solid #000; outline-offset: 5px; }
@@ -599,6 +599,10 @@ body.thank-you-active .spots { visibility: hidden; }
   .spot-card { position: relative; left: auto; top: auto; flex: 0 0 144px; scroll-snap-align: center; transform: none !important; opacity: 1 !important; }
   .spot-card:nth-child(even) { margin-top: 28px; }
   .spot-claim { opacity: 1; }
+
+  /* Keep live brand marks clear of the card header and countdown in the
+     three-column mobile board. */
+  .spot-card.is-live img { width: 68.9px; height: 68.9px; margin-top: 0; }
 
   /* The mobile entry point is a compact, browseable claim board. The same
      cards remain viewport-pinned and animated by the desktop composition. */
