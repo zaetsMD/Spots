@@ -3,6 +3,7 @@
   "name": "slots-api",
   "main": "src/worker.js",
   "compatibility_date": "2026-09-13",
+  "workers_dev": true,
   "assets": {
     "directory": "../dist"
   },
@@ -20,7 +21,7 @@
     }
   ],
   "vars": {
-    "PUBLIC_ORIGIN": "https://slots-portfolio-2026.eugenezaycev92.chatgpt.site",
+    "PUBLIC_ORIGIN": "https://spots.eugenezaycev.com",
     "OWNER_EMAIL": "zaetsmd@gmail.com"
   },
   "triggers": {

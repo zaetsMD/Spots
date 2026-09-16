@@ -119,6 +119,31 @@ mobile.addEventListener('change', configure);
 configure();
 if (location.hash) requestAnimationFrame(() => goToHash(location.hash, false));
 
+// The final story section stays visually present behind the opening scene.
+// Route clicks inside the visible statistics label directly, even if a
+// decorative layer is momentarily above it while the scene is transitioning.
+document.addEventListener('click', event => {
+  const statsLink = [...document.querySelectorAll('.presence')].find(link => {
+    const rect = link.getBoundingClientRect();
+    return rect.width > 0 && rect.height > 0 &&
+      event.clientX >= rect.left && event.clientX <= rect.right &&
+      event.clientY >= rect.top && event.clientY <= rect.bottom;
+  });
+  if (!statsLink) return;
+  event.preventDefault();
+  event.stopPropagation();
+  window.open(statsLink.href, '_blank', 'noopener,noreferrer');
+}, true);
+document.addEventListener('pointermove', event => {
+  document.querySelectorAll('.presence').forEach(link => {
+    const rect = link.getBoundingClientRect();
+    const isHovered = rect.width > 0 && rect.height > 0 &&
+      event.clientX >= rect.left && event.clientX <= rect.right &&
+      event.clientY >= rect.top && event.clientY <= rect.bottom;
+    link.classList.toggle('is-hovered', isHovered);
+  });
+}, { passive: true });
+
 
 // The spot count can be overridden on a preview page without affecting the live page.
 const gallery = document.querySelector('.spot-gallery');
@@ -233,6 +258,13 @@ function formatTimeRemaining(expiresAt) {
   return `${days}d ${String(hours).padStart(2, '0')}h ${String(minutes).padStart(2, '0')}m`;
 }
 
+function formatPublicAmount(amountCents) {
+  if (!Number.isInteger(amountCents)) return '';
+  return new Intl.NumberFormat('en-IE', {
+    style: 'currency', currency: 'EUR', minimumFractionDigits: 0, maximumFractionDigits: 2
+  }).format(amountCents / 100);
+}
+
 function showLiveSpot(spot) {
   const card = cards[spot.spot - 1];
   if (!card) return;
@@ -241,6 +273,13 @@ function showLiveSpot(spot) {
   logo.alt = `Logo in spot ${spot.spot}`;
   const countdown = document.createElement('span');
   countdown.className = 'spot-countdown';
+  const header = document.createElement('span');
+  header.className = 'spot-card-header';
+  const number = document.createElement('span');
+  number.textContent = `Spot #${spot.spot}`;
+  const amount = document.createElement('span');
+  amount.textContent = formatPublicAmount(spot.amountCents);
+  header.append(number, amount);
   const updateCountdown = () => { countdown.textContent = formatTimeRemaining(spot.expiresAt); };
   updateCountdown();
   window.setInterval(updateCountdown, 60000);
@@ -249,7 +288,7 @@ function showLiveSpot(spot) {
   card.target = '_blank';
   card.rel = 'noopener';
   card.setAttribute('aria-label', `Visit website in live spot ${spot.spot}`);
-  card.replaceChildren(logo, countdown);
+  card.replaceChildren(header, logo, countdown);
 }
 
 function showPendingSpot(spot) {
@@ -257,7 +296,7 @@ function showPendingSpot(spot) {
   if (!card) return;
   const label = document.createElement('span');
   label.className = 'spot-pending';
-  label.innerHTML = 'Pending<br><strong>Under review</strong>';
+  label.innerHTML = `<span>Spot #${spot.spot}</span><strong>Under review</strong>`;
   card.classList.add('is-pending');
   card.removeAttribute('target');
   card.removeAttribute('rel');

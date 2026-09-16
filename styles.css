@@ -334,9 +334,9 @@ h1, h2 {
   line-height: 20px;
   letter-spacing: -.05em;
 }
-.presence { grid-column: 1 / span 4; align-self: start; margin-top: 32px; color: inherit; text-decoration: none; }
+.presence { position: relative; z-index: 4; grid-column: 1 / span 4; align-self: start; margin-top: 32px; color: inherit; text-decoration: none; pointer-events: auto; }
 .presence--mobile { display: none; }
-.presence:hover, .presence:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
+.presence:hover, .presence.is-hovered, .presence:focus-visible { text-decoration: underline; text-underline-offset: 3px; }
 .presence > span:first-child { display: inline-block; width: 5px; height: 5px; margin: 0 4px 1px 0; background: var(--green); border-radius: 50%; animation: presence-pulse 1.7s ease-in-out infinite; }
 @keyframes presence-pulse { 50% { opacity: .2; } }
 @media (prefers-reduced-motion: reduce) { .presence > span:first-child { animation: none; } }
@@ -371,6 +371,7 @@ h1, h2 {
 .scroll-story { height: 460svh; }
 .scroll-story .scroll-stage { position: sticky; top: 0; height: 100svh; }
 .scroll-story .spot-section { position: absolute; inset: 0; height: 100%; min-height: 0; grid-template-rows: auto 1fr auto; }
+.scroll-story .spot-section:not(.is-visible) { pointer-events: none; }
 .scroll-story .spot-gallery { visibility: visible; }
 .scroll-story h1, .scroll-story h2 { grid-row: 1; }
 .scroll-story .presence { grid-row: 2; }
@@ -447,6 +448,7 @@ h1, h2 {
 
 /* The spots stay pinned while the story changes behind them. */
 .spot-section > * { position: relative; z-index: 2; }
+.spot-section .presence { z-index: 10 !important; pointer-events: auto !important; cursor: pointer; }
 .final > .back { z-index: 3; }
 .spot-gallery {
   position: fixed !important;
@@ -567,10 +569,12 @@ body.thank-you-active .spots { visibility: hidden; }
   opacity: 0;
   transition: opacity 180ms ease;
 }
-.spot-pending { width: 100%; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; padding: 24px; background: #fff; color: #c8c8c8; font-size: 13px; line-height: 20px; letter-spacing: -.05em; text-align: left; }
+.spot-pending { width: 100%; height: 100%; box-sizing: border-box; display: flex; flex-direction: column; justify-content: space-between; padding: 14px 16px 24px; background: #fff; color: #c8c8c8; font-size: 13px; line-height: 20px; letter-spacing: -.05em; text-align: left; }
 .spot-pending strong { color: #000; font: inherit; }
 .spot-card.is-live { background: #fff; overflow: hidden; }
-.spot-card.is-live img { display: block; width: 97px; height: 97px; object-fit: contain; }
+.spot-card.is-live img { display: block; width: 97px; height: 97px; margin-top: 12px; object-fit: contain; }
+.spot-card-header { position: absolute; top: 14px; right: 16px; left: 16px; display: flex; justify-content: space-between; gap: 8px; color: #c8c8c8; font-size: 13px; line-height: 20px; letter-spacing: -.05em; }
+.spot-card-header span:last-child { color: #000; white-space: nowrap; }
 .spot-preview-logo { display: grid; place-items: center; width: calc(100% - 32px); height: calc(100% - 66px); font-size: 26px; line-height: 1; letter-spacing: -.08em; text-align: center; }
 .spot-preview-logo--1 { font-size: 34px; font-family: Georgia, serif; font-style: italic; letter-spacing: -.12em; }
 .spot-preview-logo--2 { font-size: 20px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }

@@ -55,6 +55,10 @@ async function hmac(value, secret) {
   return [...new Uint8Array(signature)].map(byte => byte.toString(16).padStart(2, '0')).join('');
 }
 
+function applicantEmailFooter() {
+  return `<hr style="border:0;border-top:1px solid #ccc;margin:24px 0"><p><a href="https://spots.eugenezaycev.com/">spots.eugenezaycev.com</a></p><p>Cheers,<br>Eugene</p><p>X.com – <a href="https://x.com/zaetsmd">https://x.com/zaetsmd</a><br>LinkedIn – <a href="https://www.linkedin.com/in/eugenezaycev/">https://www.linkedin.com/in/eugenezaycev/</a></p>`;
+}
+
 async function createSession(env) {
   const expires = Math.floor(Date.now() / 1000) + SESSION_TTL_SECONDS;
   const payload = `spots-admin.${expires}`;
@@ -93,7 +97,8 @@ async function activeSpots(env) {
       goUrl: `/go/${row.id}`,
       publishedAt: row.published_at,
       expiresAt: row.expires_at,
-      clicks: row.total_clicks
+      clicks: row.total_clicks,
+      amountCents: row.approved_amount_cents
     } : {})
   }));
 }
@@ -128,13 +133,13 @@ async function submitApplication(request, env) {
   const adminUrl = `${new URL(request.url).origin}/admin`;
   await notify(env, {
     to: env.OWNER_EMAIL,
-    subject: `Spots: Spot #${spot} is awaiting review`,
+    subject: `Spot #${spot} is awaiting review`,
     html: `<p>A new application is awaiting manual payment and content review.</p><p><strong>Spot:</strong> #${spot}<br><strong>Website:</strong> <a href="${website}">${website}</a><br><strong>Email:</strong> ${email}</p><p><a href="${adminUrl}">Open Spots admin</a></p>`
   });
   await notify(env, {
     to: email,
-    subject: 'Spots — we received your submission',
-    html: `<p>Thank you for your submission.</p><p>We’ll verify your payment and review the content. Your logo and link will be published within 12 hours when approved. If it isn’t safe or appropriate to publish, we’ll let you know.</p><p>We’ll email you again when it is live.</p>`
+    subject: `Spot #${spot} — we received your submission`,
+    html: `<p>Thank you for your submission.</p><p>We’ll verify your payment and review the content. Your logo and link will be published within 12 hours when approved. If it isn’t safe or appropriate to publish, we’ll let you know.</p><p>We’ll email you again when it is live.</p>${applicantEmailFooter()}`
   });
   return json({ id: applicationId, status: 'pending' }, 201);
 }
@@ -150,13 +155,13 @@ async function reviewApplication(request, env, applicationId, status) {
     const expiresAt = new Date(Date.now() + 7 * 24 * 60 * 60 * 1000).toISOString();
     await env.DB.prepare(`UPDATE applications SET status = 'published', reviewed_at = ?, published_at = ?, expires_at = ?, approved_amount_cents = ? WHERE id = ?`)
       .bind(reviewedAt, reviewedAt, expiresAt, amountCents, applicationId).run();
-    await notify(env, { to: record.email, subject: 'Spots — your logo is live', html: `<p>Your logo is now live on Spots for 7 days.</p><p>Thank you for taking part.</p>` });
+    await notify(env, { to: record.email, subject: `Spot #${record.spot_number} — your logo is live`, html: `<p>Your logo is now live on Spots for 7 days.</p><p>Thank you for taking part.</p>${applicantEmailFooter()}` });
     return json({ status: 'published', expiresAt });
   }
   const reason = text(body.reason, 1000) || 'We could not approve this submission for publication.';
   await env.DB.prepare(`UPDATE applications SET status = 'rejected', reviewed_at = ?, rejected_at = ?, rejected_reason = ? WHERE id = ?`)
     .bind(reviewedAt, reviewedAt, reason, applicationId).run();
-  await notify(env, { to: record.email, subject: 'Spots — submission update', html: `<p>Thanks for your submission. Unfortunately, we can’t publish it.</p><p>${reason}</p>` });
+  await notify(env, { to: record.email, subject: `Spot #${record.spot_number} — submission update`, html: `<p>Thanks for your submission. Unfortunately, we can’t publish it.</p><p>${reason}</p>${applicantEmailFooter()}` });
   return json({ status: 'rejected' });
 }
 
@@ -188,8 +193,8 @@ async function expireSpots(env) {
     await env.DB.prepare(`UPDATE applications SET status = 'expired', expiry_email_sent_at = ? WHERE id = ?`).bind(now(), record.id).run();
     await notify(env, {
       to: record.email,
-      subject: 'Spots — thank you for being part of the experiment',
-      html: `<p>You were a part of the experiment, and that means a lot. Thank you, thank you, and once again thank you.</p><p>Your link was clicked <strong>${record.total_clicks}</strong> times: <strong>${record.unique_clicks}</strong> unique visitors and <strong>${record.total_clicks - record.unique_clicks}</strong> repeat clicks.</p><p>Want the same spot for one more week? Pay again using the Revolut link for spot ${record.spot_number}.</p>`
+      subject: `Spot #${record.spot_number} — thank you for being part of the experiment`,
+      html: `<p>You were a part of the experiment, and that means a lot. Thank you, thank you, and once again thank you.</p><p>Your link was clicked <strong>${record.total_clicks}</strong> times: <strong>${record.unique_clicks}</strong> unique visitors and <strong>${record.total_clicks - record.unique_clicks}</strong> repeat clicks.</p><p>Want the same spot for one more week? Pay again using the Revolut link for spot ${record.spot_number}.</p>${applicantEmailFooter()}`
     });
   }
 }
