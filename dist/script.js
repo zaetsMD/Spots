@@ -174,6 +174,7 @@ let focused = false;
 let galleryVisible = true;
 let previousTime = 0;
 let galleryFrame = 0;
+const autoplaySpeed = 0.15; // radians per second: one turn in ~42 seconds
 function drawGallery() {
   const width = gallery.clientWidth;
   const height = gallery.clientHeight;
@@ -198,6 +199,7 @@ function animateGallery(time) {
   galleryFrame = 0;
   const delta = previousTime ? Math.min((time - previousTime) / 1000, 0.05) : 0;
   previousTime = time;
+  if (!hovered && !focused) angle += delta * autoplaySpeed;
   parallaxX += (pointer - parallaxX) * Math.min(1, delta * 7);
   parallaxY += (pointerY - parallaxY) * Math.min(1, delta * 7);
   pointerAngle += (pointer * 0.12 - pointerAngle) * Math.min(1, delta * 5);
