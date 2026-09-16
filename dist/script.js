@@ -276,7 +276,7 @@ function showLiveSpot(spot) {
   const header = document.createElement('span');
   header.className = 'spot-card-header';
   const number = document.createElement('span');
-  number.textContent = `Spot #${spot.spot}`;
+  number.textContent = `#${spot.spot}`;
   const amount = document.createElement('span');
   amount.textContent = formatPublicAmount(spot.amountCents);
   header.append(number, amount);
@@ -296,7 +296,7 @@ function showPendingSpot(spot) {
   if (!card) return;
   const label = document.createElement('span');
   label.className = 'spot-pending';
-  label.innerHTML = `<span>Spot #${spot.spot}</span><strong>Under review</strong>`;
+  label.innerHTML = `<span>#${spot.spot}</span><strong>Under review</strong>`;
   card.classList.add('is-pending');
   card.removeAttribute('target');
   card.removeAttribute('rel');
