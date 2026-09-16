@@ -576,7 +576,7 @@ body.thank-you-active .spots { visibility: hidden; }
 .spot-card.is-live img { display: block; width: 97px; height: 97px; margin-top: 12px; object-fit: contain; }
 .spot-card-header { position: absolute; top: 14px; right: 16px; left: 16px; display: flex; justify-content: space-between; gap: 8px; color: #c8c8c8; font-size: 13px; line-height: 20px; letter-spacing: -.05em; }
 .spot-word { color: #ccc; }
-.spot-card-header span:last-child { color: #000; white-space: nowrap; }
+.spot-card-header > span:last-child { color: #000; white-space: nowrap; }
 .spot-preview-logo { display: grid; place-items: center; width: calc(100% - 32px); height: calc(100% - 66px); font-size: 26px; line-height: 1; letter-spacing: -.08em; text-align: center; }
 .spot-preview-logo--1 { font-size: 34px; font-family: Georgia, serif; font-style: italic; letter-spacing: -.12em; }
 .spot-preview-logo--2 { font-size: 20px; font-weight: 700; letter-spacing: .08em; text-transform: uppercase; }
