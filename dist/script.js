@@ -6,7 +6,7 @@ const motion = matchMedia('(prefers-reduced-motion: reduce)');
 const desktop = matchMedia('(min-width: 801px) and (min-height: 600px)');
 const mobile = matchMedia('(max-width: 800px)');
 const presenceCopies = [...document.querySelectorAll('.presence-copy')];
-const analyticsShareId = '83C7lwF3Wyao9hIR';
+const analyticsShareId = 'YvXVSLKycfkfv74t';
 const analyticsGateway = 'https://gateway-eu.umami.is/api';
 
 async function updatePresence() {
