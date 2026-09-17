@@ -242,6 +242,7 @@ const applicationForm = document.querySelector('.application-form');
 const closeApplication = document.querySelector('.application-close');
 const spotNumber = document.querySelector('.spot-number');
 const paymentNote = document.querySelector('.payment-note');
+const paymentBlock = document.querySelector('.payment');
 const revolutLink = document.querySelector('.revolut-link');
 const submitApplication = document.querySelector('.submit-application');
 const messageLabel = document.querySelector('.reveal-after-payment');
@@ -380,6 +381,7 @@ function openForm(spot, origin) {
   selectedSpot = spot;
   paymentStarted = false;
   paymentWindowWasHidden = false;
+  paymentBlock.hidden = false;
   submitApplication.hidden = true;
   messageLabel.hidden = true;
   spotNumber.textContent = spot;
@@ -419,6 +421,7 @@ document.addEventListener('keydown', event => {
 revolutLink.addEventListener('click', () => {
   paymentStarted = true;
   paymentWindowWasHidden = false;
+  paymentBlock.hidden = true;
 });
 window.addEventListener('blur', () => {
   if (paymentStarted) paymentWindowWasHidden = true;
