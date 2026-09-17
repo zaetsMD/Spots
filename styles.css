@@ -532,7 +532,7 @@ body.thank-you-active .spots { visibility: hidden; }
 .application-close { position: fixed; top: clamp(32px, 6.667vw, 96px); right: clamp(24px, 8.889vw, 128px); width: 42px; height: 42px; padding: 0; border: 0; background: transparent; color: #ccc; font-family: Arial, sans-serif; font-size: 56px; font-weight: 200; line-height: 31px; cursor: pointer; }
 .payment { margin-top: 2px; font-size: 13px; line-height: 20px; letter-spacing: -.05em; }
 .payment + .message-label { margin-top: 32px; }
-.reveal-after-payment[hidden] { display: none; }
+.reveal-after-payment[hidden], .submit-application[hidden] { display: none; }
 .payment-title { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #c8c8c8; }
 .revolut-link { text-decoration: underline; text-underline-offset: 3px; }
 .revolut-link { cursor: pointer; }
