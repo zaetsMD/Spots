@@ -245,11 +245,12 @@ const paymentNote = document.querySelector('.payment-note');
 const paymentBlock = document.querySelector('.payment');
 const revolutLink = document.querySelector('.revolut-link');
 const submitApplication = document.querySelector('.submit-application');
+const submitError = document.querySelector('.application-submit-error');
 const messageLabel = document.querySelector('.reveal-after-payment');
 const logoUpload = document.querySelector('#logo-upload');
 const logoPreview = document.querySelector('.logo-preview');
 const uploadPrompt = document.querySelector('.upload-prompt');
-const uploadError = document.querySelector('.upload-error');
+const uploadDropzone = document.querySelector('.upload-dropzone');
 const thankYou = document.querySelector('.thank-you');
 const spotsApi = '';
 
@@ -375,6 +376,17 @@ function animateSpotToUpload(origin, sourceCard) {
     flight.classList.add('is-arrived');
     flight.innerHTML = '<span class="spot-upload-prompt">Click<br>to upload<br>logo</span>';
     flight.addEventListener('click', () => logoUpload.click(), { once: true });
+    flight.addEventListener('dragover', event => {
+      event.preventDefault();
+      event.dataTransfer.dropEffect = 'copy';
+      flight.classList.add('is-dragging');
+    });
+    flight.addEventListener('dragleave', () => flight.classList.remove('is-dragging'));
+    flight.addEventListener('drop', event => {
+      event.preventDefault();
+      flight.classList.remove('is-dragging');
+      handleLogoFile(event.dataTransfer.files[0]);
+    });
   });
 }
 function openForm(spot, origin) {
@@ -383,6 +395,7 @@ function openForm(spot, origin) {
   paymentWindowWasHidden = false;
   paymentBlock.hidden = false;
   submitApplication.hidden = true;
+  submitError.hidden = true;
   messageLabel.hidden = true;
   spotNumber.textContent = spot;
   paymentNote.textContent = `spot${spot}`;
@@ -422,6 +435,10 @@ revolutLink.addEventListener('click', () => {
   paymentStarted = true;
   paymentWindowWasHidden = false;
   paymentBlock.hidden = true;
+  // The payment opens in another tab/window; keep the next step available
+  // even when the browser does not emit a reliable focus event on return.
+  submitApplication.hidden = false;
+  messageLabel.hidden = false;
 });
 window.addEventListener('blur', () => {
   if (paymentStarted) paymentWindowWasHidden = true;
@@ -431,20 +448,50 @@ document.addEventListener('visibilitychange', () => {
   if (document.hidden && paymentStarted) paymentWindowWasHidden = true;
   if (!document.hidden) showSubmitAfterReturn();
 });
-logoUpload.addEventListener('change', () => {
-  const [file] = logoUpload.files;
+function handleLogoFile(file) {
   if (!file) return;
+  // Keep the native input in sync so FormData submission works for dropped files.
+  const transfer = new DataTransfer();
+  transfer.items.add(file);
+  logoUpload.files = transfer.files;
   if (previewUrl) URL.revokeObjectURL(previewUrl);
   previewUrl = URL.createObjectURL(file);
   logoPreview.hidden = true;
   uploadPrompt.hidden = false;
-  uploadError.hidden = true;
+  submitError.hidden = true;
   logoPreview.src = previewUrl;
   activeFlight?.remove();
   activeFlight = undefined;
   const reader = new FileReader();
   reader.addEventListener('load', () => { uploadedLogoData = reader.result; });
   reader.readAsDataURL(file);
+  uploadDropzone.classList.remove('has-error');
+  uploadDropzone.removeAttribute('aria-invalid');
+}
+logoUpload.addEventListener('change', () => handleLogoFile(logoUpload.files[0]));
+uploadDropzone.addEventListener('dragenter', event => {
+  event.preventDefault();
+  uploadDropzone.classList.add('is-dragging');
+});
+uploadDropzone.addEventListener('dragover', event => {
+  event.preventDefault();
+  event.dataTransfer.dropEffect = 'copy';
+  uploadDropzone.classList.add('is-dragging');
+});
+uploadDropzone.addEventListener('dragleave', event => {
+  if (!uploadDropzone.contains(event.relatedTarget)) uploadDropzone.classList.remove('is-dragging');
+});
+uploadDropzone.addEventListener('drop', event => {
+  event.preventDefault();
+  uploadDropzone.classList.remove('is-dragging');
+  const [file] = event.dataTransfer.files;
+  if (file) handleLogoFile(file);
+});
+uploadDropzone.addEventListener('keydown', event => {
+  if (event.key === 'Enter' || event.key === ' ') {
+    event.preventDefault();
+    logoUpload.click();
+  }
 });
 logoPreview.addEventListener('load', () => {
   logoPreview.hidden = false;
@@ -453,8 +500,8 @@ logoPreview.addEventListener('load', () => {
 logoPreview.addEventListener('error', () => {
   logoPreview.removeAttribute('src');
   uploadPrompt.hidden = true;
-  uploadError.textContent = 'This browser cannot preview HEIC images. Please convert it to JPG, PNG or WEBP and upload again.';
-  uploadError.hidden = false;
+  submitError.textContent = 'This browser cannot preview HEIC images. Please convert it to JPG, PNG or WEBP and upload again.';
+  submitError.hidden = false;
 });
 function markSpotPending(card) { card.classList.add('is-pending'); card.setAttribute('aria-label', `Spot ${selectedSpot} is pending review`); card.innerHTML = '<span class="spot-pending">Pending<br><strong>Under review</strong></span>'; }
 function openThankYou() {
@@ -466,17 +513,32 @@ function returnSpotToRing() {
   closeForm();
   openThankYou();
 }
+function showMissingLogoError() {
+  const message = 'Please upload your logo before submitting the application.';
+  submitError.textContent = message;
+  submitError.hidden = false;
+  uploadDropzone.classList.add('has-error');
+  uploadDropzone.setAttribute('aria-invalid', 'true');
+  uploadDropzone.focus({ preventScroll: true });
+  uploadDropzone.scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+submitApplication.addEventListener('click', event => {
+  if (!logoUpload.files[0]) {
+    event.preventDefault();
+    showMissingLogoError();
+  }
+});
 applicationForm.addEventListener('submit', async event => {
   event.preventDefault();
   event.stopImmediatePropagation();
-  if (!paymentStarted || submitApplication.hidden || !applicationForm.reportValidity()) return;
+  if (!paymentStarted || submitApplication.hidden) return;
 
   const [logo] = logoUpload.files;
   if (!logo) {
-    uploadError.textContent = 'Please upload your logo before submitting.';
-    uploadError.hidden = false;
+    showMissingLogoError();
     return;
   }
+  if (!applicationForm.reportValidity()) return;
 
   const data = new FormData(applicationForm);
   data.set('spot', String(selectedSpot));
@@ -490,8 +552,8 @@ applicationForm.addEventListener('submit', async event => {
     if (!response.ok) throw new Error(result.error || 'Your submission could not be sent. Please try again.');
     returnSpotToRing();
   } catch (error) {
-    uploadError.textContent = error.message;
-    uploadError.hidden = false;
+    submitError.textContent = error.message;
+    submitError.hidden = false;
   } finally {
     submitApplication.disabled = false;
     submitApplication.textContent = originalLabel;

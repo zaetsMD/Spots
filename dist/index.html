@@ -71,13 +71,12 @@
     <section class="application" aria-hidden="true" aria-labelledby="application-title">
       <div class="application-upload">
         <input id="logo-upload" class="visually-hidden" type="file" accept="image/*,.heic,.heif" />
-        <label class="upload-dropzone" for="logo-upload">
+        <label class="upload-dropzone" for="logo-upload" tabindex="0">
           <img class="logo-preview" alt="Uploaded logo preview" hidden />
           <span class="upload-prompt">Click<br />to upload<br />logo</span>
-          <span class="upload-error" role="status" hidden></span>
         </label>
       </div>
-      <form class="application-form">
+      <form class="application-form" novalidate>
         <button class="application-close" type="button" aria-label="Close application">×</button>
         <h1 id="application-title">Spot #<span class="spot-number">1</span></h1>
         <p class="application-intro">Your logo will be displayed for 7 days once approved. Your 7 days start when we verify your payment — not when you submit.</p>
@@ -96,6 +95,7 @@
           <textarea name="message" placeholder="Anything you'd like to say."></textarea>
         </label>
         <button class="submit-application" type="submit" hidden>Submit</button>
+        <p class="application-submit-error" role="alert" hidden></p>
       </form>
     </section>
 
