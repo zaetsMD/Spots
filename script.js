@@ -290,7 +290,7 @@ function showLiveSpot(spot) {
   card.classList.add('is-live');
   card.href = `${spotsApi}${spot.goUrl}`;
   card.target = '_blank';
-  card.rel = 'noopener';
+  card.rel = 'sponsored noopener';
   card.setAttribute('aria-label', `Visit website in live spot ${spot.spot}`);
   card.replaceChildren(header, logo, countdown);
 }

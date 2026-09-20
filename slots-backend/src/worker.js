@@ -216,9 +216,7 @@ async function trackAndRedirect(request, env, applicationId) {
   await env.DB.prepare('UPDATE applications SET total_clicks = total_clicks + 1, unique_clicks = unique_clicks + ? WHERE id = ?')
     .bind(inserted.meta.changes ? 1 : 0, applicationId).run();
   const destination = new URL(record.website);
-  destination.searchParams.set('utm_source', 'spots');
-  destination.searchParams.set('utm_medium', 'sponsor');
-  destination.searchParams.set('utm_campaign', `spot${record.spot_number}`);
+  destination.searchParams.set('ref', 'spots');
   return Response.redirect(destination.toString(), 302);
 }
 
