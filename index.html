@@ -4,21 +4,44 @@
     <meta charset="UTF-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1.0" />
     <meta name="description" content="Get your logo on my portfolio while I apply for my next role. 12 spots, pay what you think it’s worth, and your logo stays permanently." />
-    <meta property="og:title" content="What if my job search could advertise your project?" />
+    <meta name="robots" content="index, follow" />
+    <meta property="og:title" content="Portfolio — 12 spots. 7 days. | Eugene Zaycev" />
     <meta property="og:description" content="12 spots. Pay what you think it’s worth. Your logo goes with every job application I send." />
-    <meta property="og:image" content="og-image.jpg" />
+    <meta property="og:image" content="https://spots.eugenezaycev.com/og.jpg" />
     <meta property="og:type" content="website" />
+    <meta property="og:site_name" content="Spots — Eugene Zaycev" />
+    <meta property="og:url" content="https://spots.eugenezaycev.com/" />
     <meta name="twitter:card" content="summary_large_image" />
-    <meta name="twitter:title" content="What if my job search could advertise your project?" />
+    <meta name="twitter:title" content="Portfolio — 12 spots. 7 days. | Eugene Zaycev" />
     <meta name="twitter:description" content="12 spots. Pay what you think it’s worth. Your logo goes with every job application I send." />
-    <meta name="twitter:image" content="og-image.jpg" />
-    <title>Spots — Advertise on my portfolio | Eugene Zaycev</title>
+    <meta name="twitter:image" content="https://spots.eugenezaycev.com/og.jpg" />
+    <title>Portfolio — 12 spots. 7 days. | Eugene Zaycev</title>
+    <link rel="canonical" href="https://spots.eugenezaycev.com/" />
     <link rel="icon" type="image/svg+xml" href="favicon.svg" />
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
     <link rel="stylesheet" href="styles.css?v=38" />
     <script defer src="https://cloud.umami.is/script.js" data-website-id="92b041f2-9d60-47b2-ae58-55554fca7e5a"></script>
+    <script type="application/ld+json">
+      {
+        "@context": "https://schema.org",
+        "@graph": [
+          {
+            "@type": "WebSite",
+            "name": "Spots — Eugene Zaycev",
+            "url": "https://spots.eugenezaycev.com/",
+            "description": "12 spots. 7 days."
+          },
+          {
+            "@type": "Person",
+            "name": "Eugene Zaycev",
+            "url": "https://spots.eugenezaycev.com/about.html",
+            "jobTitle": "Product Designer"
+          }
+        ]
+      }
+    </script>
   </head>
   <body>
     <a class="skip-link" href="#spots">Skip to spots</a>
@@ -86,7 +109,7 @@
       </div>
       <form class="application-form" novalidate>
         <button class="application-close" type="button" aria-label="Close application">×</button>
-        <h1 id="application-title">Spot #<span class="spot-number">1</span></h1>
+        <h2 id="application-title">Spot #<span class="spot-number">1</span></h2>
         <p class="application-intro">Your logo will be displayed for 7 days once approved. Your 7 days start when we verify your payment — not when you submit.</p>
 
         <label>Website*
@@ -108,7 +131,7 @@
     </section>
 
     <section class="thank-you" aria-hidden="true" aria-labelledby="thank-you-title">
-      <h1 id="thank-you-title">Thank you for your<br />submission.</h1>
+      <h2 id="thank-you-title">Thank you for your<br />submission.</h2>
       <div class="pending-card"><span>Pending</span><strong>Under review</strong></div>
       <p class="review-copy">Your application is now under review.<br />We'll verify your payment and get your brand live<br />as soon as everything is approved.</p>
       <p class="live-copy">We'll let you know when it's live.</p>

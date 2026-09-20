@@ -525,7 +525,7 @@ body.thank-you-active .spots { visibility: hidden; }
 .logo-preview { display: block; width: 278px; height: 278px; max-width: 100%; max-height: 100%; object-fit: contain; }
 .upload-prompt { grid-area: 1 / 1; }
 .application-form { position: relative; width: 100%; align-self: center; }
-.application-form h1 { margin-bottom: 23px; font-size: 48px; line-height: .98; letter-spacing: -.07em; }
+.application-form h2 { margin-bottom: 23px; font-size: 48px; line-height: .98; letter-spacing: -.07em; }
 .application-intro { max-width: 370px; margin-bottom: 35px; font-size: 13px; line-height: 20px; letter-spacing: -.05em; }
 .application-form label { display: block; margin-bottom: 25px; font-size: 13px; line-height: 20px; letter-spacing: -.05em; }
 .application-form input, .application-form textarea { display: block; width: 100%; margin-top: 8px; border: 1px solid #c8c8c8; border-radius: 0; background: #fff; padding: 9px 12px; color: #000; font: inherit; font-size: 13px; font-weight: 400; line-height: 20px; outline-offset: 2px; }
@@ -550,7 +550,7 @@ body.thank-you-active .spots { visibility: hidden; }
 .thank-you .pending-card { display: none; }
 .spot-card.is-returning { opacity: 0 !important; }
 .spot-return img { display: block; width: 278px; height: 278px; max-width: 100%; max-height: 100%; object-fit: contain; }
-.thank-you h1 { grid-column: 1 / span 5; font-size: 48px; line-height: .98; letter-spacing: -.07em; }
+.thank-you h2 { grid-column: 1 / span 5; font-size: 48px; line-height: .98; letter-spacing: -.07em; }
 .pending-card { grid-column: 7 / span 2; align-self: center; width: 145px; height: 186px; padding: 24px; border: 1px solid #c8c8c8; display: flex; flex-direction: column; justify-content: space-between; font-size: 13px; line-height: 20px; letter-spacing: -.05em; }
 .pending-card strong { font: inherit; }
 .review-copy, .live-copy { align-self: end; font-size: 13px; line-height: 20px; letter-spacing: -.05em; }
@@ -562,14 +562,14 @@ body.thank-you-active .spots { visibility: hidden; }
   .application.is-open { display: block; height: 100dvh; overflow-y: scroll; overscroll-behavior-y: contain; -webkit-overflow-scrolling: touch; touch-action: pan-y; }
   .application-upload { max-width: 456px; margin: 0 auto 32px; }
   .upload-dropzone { aspect-ratio: 1 / 1; }
-  .upload-prompt, .application-form h1, .thank-you h1 { font-size: clamp(36px, 11vw, 48px); }
+  .upload-prompt, .application-form h2, .thank-you h2 { font-size: clamp(36px, 11vw, 48px); }
   .application-form { max-width: 456px; margin: 0 auto; }
   .application-close { top: 26px; right: 20px; }
   .application-form input, .application-form textarea { font-size: 16px; }
   .submit-application { position: static; display: block; margin: 48px 0 0; font-size: 40px; }
   .application-submit-error { position: static; margin: 12px 0 0; }
   .thank-you { grid-template-columns: 1fr; grid-template-rows: auto 1fr auto auto; gap: 28px; padding: 32px 24px; }
-  .thank-you h1, .pending-card, .review-copy, .live-copy { grid-column: 1; }
+  .thank-you h2, .pending-card, .review-copy, .live-copy { grid-column: 1; }
   .pending-card { justify-self: center; align-self: center; }
   .review-copy, .live-copy { align-self: end; }
 }

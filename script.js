@@ -274,7 +274,7 @@ function showLiveSpot(spot) {
   if (!card) return;
   const logo = document.createElement('img');
   logo.src = `${spotsApi}${spot.logoUrl}`;
-  logo.alt = `Logo in spot ${spot.spot}`;
+  logo.alt = `Advertiser logo in spot ${spot.spot}`;
   const countdown = document.createElement('span');
   countdown.className = 'spot-countdown';
   const header = document.createElement('span');
