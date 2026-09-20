@@ -4,6 +4,21 @@ This Cloudflare Worker serves the complete Spots site from `../dist` and its API
 
 ## Deploy
 
+Production deploys run automatically from GitHub Actions after a push to `main`.
+Add these repository secrets in GitHub before the first deploy:
+
+- `CLOUDFLARE_API_TOKEN` — an API token with Workers Scripts edit permission and access to this account.
+- `CLOUDFLARE_ACCOUNT_ID` — the Cloudflare account ID that owns the `slots-api` Worker, D1 database and R2 bucket.
+
+The Worker serves the root project directory directly, so the root site files are the single source of truth. Backend, Git metadata and workflow files are excluded from the uploaded assets.
+
+For a local deploy, from the repository root run:
+
+```sh
+cd slots-backend
+npx wrangler deploy --config wrangler.jsonc
+```
+
 For a new database:
 
 ```sh
