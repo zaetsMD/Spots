@@ -1,0 +1,5 @@
+slots-backend/**
+.git/**
+.github/**
+dist/**
+node_modules/**
