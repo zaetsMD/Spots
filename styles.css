@@ -326,6 +326,7 @@ a { color: inherit; text-decoration: none; }
   padding: var(--margin-y) var(--margin-x);
   overflow: hidden;
 }
+.mobile-story-ending { display: none; }
 
 h1, h2, h3, p { margin: 0; font: inherit; }
 .mobile-break { display: none; }
@@ -397,23 +398,91 @@ h1, h2 {
   /* The desktop scroll-story controls are decorative at this size. Keeping
      them fixed covered the carousel and the page menu on short phones. */
   .content-nav { display: none; }
-  .scroll-stage { display: flex; flex-direction: column; }
-  .scroll-stage > .spot-section:not(.final) { display: none; }
+  .scroll-stage {
+    display: flex;
+    flex-direction: column;
+  }
+  .mobile-story-carousel {
+    display: flex;
+    width: calc(100% - 24px);
+    min-width: 0;
+    align-items: stretch;
+    gap: 24px;
+    margin-left: 24px;
+    padding: 0 24px 0 0;
+    scroll-padding-left: 0;
+    overflow-x: auto;
+    overscroll-behavior-x: contain;
+    scroll-snap-type: x mandatory;
+    scrollbar-width: none;
+    touch-action: pan-x pan-y;
+  }
+  .mobile-story-carousel::-webkit-scrollbar { display: none; }
+  /* Keep the full story available below the mobile spot board. */
+  .scroll-stage > .spot-section:not(.final), .mobile-story-carousel > .spot-section { display: flex; }
   .spot-section { display: flex; min-height: auto; flex-direction: column; align-items: stretch; gap: 28px; padding: 32px 24px 112px; overflow: visible; }
-  .spot-section.intro { min-height: 100svh; }
-  .spot-section.final { order: -1; gap: 28px; padding-top: 32px; }
-  .final > h2, .final .offer p:first-of-type { display: none; }
+  .mobile-story-carousel .spot-section {
+    flex: 0 0 calc(100vw - 120px);
+    margin: 0;
+    padding: 24px 24px 40px !important;
+    scroll-snap-align: start;
+    scroll-snap-stop: always;
+    scroll-margin-left: 0;
+  }
+  .mobile-story-carousel br { display: none; }
+  .mobile-story-carousel h2 {
+    font-size: 32px;
+    line-height: .96;
+    letter-spacing: -.05em;
+  }
+  .mobile-story-carousel .spot-section:first-child { margin-left: 0 !important; }
+  .mobile-story-carousel .spot-section.intro { margin-top: 0; }
+  .spot-section.intro { min-height: auto; }
+  .spot-section.final { order: -1; gap: 28px; padding-top: 32px; padding-bottom: 0; }
+  .final > h2, .final .offer p:first-of-type { display: block; }
+  .final .offer { order: 1; }
+  .final .spot-gallery { order: 2; }
+  .final > h2 { order: 3; }
+  .final > h1, .final > h2 { display: none; }
+  .mobile-story-ending { display: block; margin: 64px 24px 112px; padding: 0 0 32px; }
+  .mobile-story-card { margin: 0; padding: 0; border: 0; }
+  .mobile-story-card h2, .mobile-story-card h3 { font-size: clamp(35px, 10.6vw, 48px); line-height: .98; letter-spacing: -.05em; }
+  .mobile-story-ending h2 { font-size: 32px; line-height: .96; letter-spacing: -.05em; }
+  .mobile-story-card + .mobile-story-card h3 { margin-top: 56px; }
+  .mobile-story-card p { margin-top: 24px; font-size: 13px; line-height: 20px; letter-spacing: -.05em; }
+  .mobile-top-link { color: inherit; text-decoration: underline; text-underline-offset: 3px; }
+  .offer .mobile-top-link { text-decoration: none; }
+  .mobile-story-card h3 + p { margin-top: 24px; }
+  .mobile-story-signoff { margin-top: 24px; }
+  .mobile-story-signoff p + p { margin-top: 24px; }
+  .mobile-story-signoff strong { font-weight: inherit; }
   h1, h2 { grid-column: 1 / -1; font-size: clamp(35px, 10.6vw, 48px); line-height: .98; }
   .presence { margin-top: 0; }
+  .intro > .presence { display: none; }
   .detail, .aside { align-self: auto; margin: 0; }
   .intro .aside { margin-top: 12px; }
   .down { display: none; }
   .offer { align-self: stretch; margin: 0; }
+  .offer p { margin-bottom: 32px; }
   .offer h3 { margin-bottom: 24px; font-size: clamp(35px, 10.6vw, 48px); line-height: .98; }
   .presence--mobile { display: block; margin: 0 0 24px; }
   .mobile-break { display: block; }
   .final-aside { display: none; }
   .back { display: none; }
+
+  /* Once the spot board is over, keep the remaining story beats visually
+     connected instead of treating each section as a separate screen. */
+  .spot-section:not(.final) { padding-top: 0; padding-bottom: 64px; }
+  .spot-section:not(.final) + .spot-section:not(.final) { padding-top: 0; }
+  .spot-section:not(.final) {
+    margin: 24px;
+    padding: 24px 24px 40px;
+    border: 1px solid var(--grey);
+  }
+  .mobile-story-carousel .spot-section {
+    margin: 0;
+  }
+  .spot-section.intro { margin-top: 24px; }
 
   /* Mobile keeps the content in the document flow, but each story beat still
      arrives with the same measured pacing as the desktop scroll narrative. */
@@ -423,6 +492,9 @@ h1, h2 {
     transition: opacity 520ms cubic-bezier(.16, 1, .3, 1), translate 520ms cubic-bezier(.16, 1, .3, 1);
   }
   .mobile-story .spot-section.has-entered > * { opacity: 1; translate: 0 0; }
+  /* The claim section is the mobile entry point, so its restored story copy
+     must remain visible even before the observer reaches later sections. */
+  .mobile-story .final > * { opacity: 1; translate: 0 0; }
   .mobile-story .spot-section > :nth-child(2) { transition-delay: 70ms; }
   .mobile-story .spot-section > :nth-child(3) { transition-delay: 130ms; }
   .mobile-story .spot-section > :nth-child(4) { transition-delay: 190ms; }
@@ -627,7 +699,8 @@ body.thank-you-active .spots { visibility: hidden; }
   /* The mobile entry point is a compact, browseable claim board. The same
      cards remain viewport-pinned and animated by the desktop composition. */
   .final .spot-gallery { width: 100%; height: auto; margin: 0; overflow: visible; scroll-snap-type: none; }
-  .final .spot-ring { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 12px; width: 100%; min-width: 0; height: auto; padding: 0 0 84px; }
+  .final .spot-ring { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 24px 12px; width: 100%; min-width: 0; height: auto; padding: 0; }
+  .final .spot-gallery { margin-bottom: 64px; }
   .final .spot-card { width: 100%; height: auto; min-width: 0; aspect-ratio: 144 / 184; margin: 0; }
   .final .spot-card:nth-child(even) { margin-top: 0; }
 }

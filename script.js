@@ -42,6 +42,10 @@ sections.forEach(section => {
   heading.innerHTML = heading.innerHTML.split(/<br\s*\/?\s*>/i)
     .map(line => `<span class="line"><span>${line}</span></span>`).join('');
 });
+const mobileStoryCarousel = document.createElement('div');
+mobileStoryCarousel.className = 'mobile-story-carousel';
+sections.filter(section => !section.classList.contains('final')).forEach(section => mobileStoryCarousel.append(section));
+stage.append(mobileStoryCarousel);
 const clamp = value => Math.max(0, Math.min(1, value));
 let enabled = false;
 let pending = false;
