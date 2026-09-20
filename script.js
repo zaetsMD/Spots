@@ -247,7 +247,7 @@ const closeApplication = document.querySelector('.application-close');
 const spotNumber = document.querySelector('.spot-number');
 const paymentNote = document.querySelector('.payment-note');
 const paymentBlock = document.querySelector('.payment');
-const revolutLink = document.querySelector('.revolut-link');
+const revolutButton = document.querySelector('.revolut-button');
 const submitApplication = document.querySelector('.submit-application');
 const submitError = document.querySelector('.application-submit-error');
 const messageLabel = document.querySelector('.reveal-after-payment');
@@ -403,7 +403,7 @@ function openForm(spot, origin) {
   messageLabel.hidden = true;
   spotNumber.textContent = spot;
   paymentNote.textContent = `spot${spot}`;
-  revolutLink.href = revolutUrl(spot);
+  revolutButton.href = revolutUrl(spot);
   application.classList.add('is-open');
   if (origin && !motion.matches && !mobile.matches) application.classList.add('is-animating');
   application.setAttribute('aria-hidden', 'false');
@@ -435,7 +435,7 @@ closeApplication.addEventListener('click', cancelSpotApplication);
 document.addEventListener('keydown', event => {
   if (event.key === 'Escape' && application.classList.contains('is-open')) cancelSpotApplication();
 });
-revolutLink.addEventListener('click', () => {
+revolutButton.addEventListener('click', () => {
   paymentStarted = true;
   paymentWindowWasHidden = false;
   paymentBlock.hidden = true;

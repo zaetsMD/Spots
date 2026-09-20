@@ -611,9 +611,12 @@ body.thank-you-active .spots { visibility: hidden; }
 .payment + .message-label { margin-top: 32px; }
 .reveal-after-payment[hidden], .submit-application[hidden] { display: none; }
 .payment[hidden] { display: none; }
-.payment-title { margin-bottom: 8px; padding-bottom: 8px; border-bottom: 1px solid #c8c8c8; }
-.revolut-link { text-decoration: underline; text-underline-offset: 3px; }
-.revolut-link { cursor: pointer; }
+.payment-title { margin-bottom: 0; padding-bottom: 8px; }
+.revolut-button { display: grid; place-items: center; width: 100%; height: 77px; margin: 0 0 16px; border: 1px solid #2f3040; border-radius: 13px; background: #202027; cursor: pointer; transition: background 150ms ease, transform 150ms ease; }
+.revolut-button img { display: block; width: min(169px, 55%); height: auto; transform: translateY(3px); }
+.revolut-button:hover { background: #2b2c35; }
+.revolut-button:active { transform: scale(.99); }
+.revolut-button:focus-visible { outline: 2px solid #000; outline-offset: 3px; }
 .submit-application { position: absolute; left: 0; bottom: -33px; border: 0; background: transparent; padding: 0; color: #000; font: inherit; font-size: 48px; line-height: 1; letter-spacing: -.07em; cursor: pointer; }
 .submit-application:hover, .submit-application:focus-visible { text-decoration: underline; text-underline-offset: 4px; }
 .application-submit-error { position: absolute; left: 0; bottom: -112px; margin: 0; color: #d00; font-size: 13px; line-height: 20px; letter-spacing: -.05em; }
