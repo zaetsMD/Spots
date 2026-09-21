@@ -511,7 +511,7 @@ function markSpotPending(card) { card.classList.add('is-pending'); card.setAttri
 function openThankYou() {
   if (uploadedLogoData) sessionStorage.setItem('spots-pending-logo', uploadedLogoData);
   else sessionStorage.removeItem('spots-pending-logo');
-  location.assign(`thank-you.html?spot=${selectedSpot}`);
+  location.assign(`/thank-you?spot=${selectedSpot}`);
 }
 function returnSpotToRing() {
   closeForm();
