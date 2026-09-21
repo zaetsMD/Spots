@@ -353,6 +353,73 @@ h1, h2 {
 .detail { grid-column: 1 / span 4; align-self: end; margin-bottom: 2px; }
 .aside { grid-column: 10 / -1; align-self: end; margin-bottom: 2px; }
 
+.applications-heading { cursor: default; outline: none; }
+.applications-heading:focus-visible { outline: 1px solid currentColor; outline-offset: 8px; }
+.applications-total { display: inline-flex; }
+.application-digit {
+  position: relative;
+  display: inline-grid;
+  min-width: .56em;
+  justify-items: center;
+  perspective: 1.2em;
+  overflow: hidden;
+}
+.application-digit-old,
+.application-digit-new {
+  grid-area: 1 / 1;
+  backface-visibility: hidden;
+  transform-origin: 50% 50%;
+}
+.application-digit-old {
+  animation: application-digit-out 86ms linear both;
+}
+.application-digit-new {
+  animation: application-digit-in 86ms linear both;
+}
+@keyframes application-digit-out {
+  0%, 46% { opacity: 1; transform: rotateX(0deg) translateY(0); }
+  100% { opacity: 0; transform: rotateX(-92deg) translateY(-.12em); }
+}
+@keyframes application-digit-in {
+  0%, 44% { opacity: 0; transform: rotateX(92deg) translateY(.12em); }
+  100% { opacity: 1; transform: rotateX(0deg) translateY(0); }
+}
+@media (prefers-reduced-motion: reduce) {
+  .application-digit-old, .application-digit-new { animation: none; }
+}
+.applications-breakdown {
+  position: absolute !important;
+  z-index: 5 !important;
+  top: calc(var(--margin-y) + 164px);
+  left: var(--margin-x);
+  width: min(360px, calc(100vw - (2 * var(--margin-x))));
+  padding: 16px;
+  border: 1px solid var(--grey);
+  background: #fff;
+  font-size: 13px;
+  line-height: 20px;
+  letter-spacing: -.05em;
+  opacity: 0;
+  translate: 0 8px;
+  visibility: hidden;
+  pointer-events: none;
+  transition: opacity 160ms ease, translate 160ms ease, visibility 0s linear 160ms;
+}
+.applications-heading:hover + .applications-breakdown,
+.applications-heading:focus + .applications-breakdown,
+.applications-breakdown:hover {
+  opacity: 1;
+  translate: 0 0;
+  visibility: visible;
+  pointer-events: auto;
+  transition-delay: 0s;
+}
+.applications-divider { height: 1px; margin: 14px 0; background: var(--grey); }
+.applications-days { display: grid; gap: 6px; margin: 0; padding: 0; list-style: none; }
+.applications-days li { display: flex; justify-content: space-between; gap: 24px; }
+.applications-days time { color: var(--grey); }
+.applications-days span { text-align: right; }
+
 .down {
   grid-column: 6 / span 2;
   align-self: end;
@@ -460,6 +527,11 @@ h1, h2 {
   .presence { margin-top: 0; }
   .intro > .presence { display: none; }
   .detail, .aside { align-self: auto; margin: 0; }
+  .applications-breakdown {
+    position: static !important;
+    width: 100%;
+    margin-top: -12px;
+  }
   .intro .aside { margin-top: 12px; }
   .down { display: none; }
   .offer { align-self: stretch; margin: 0; }

@@ -26,6 +26,8 @@ npx wrangler d1 execute slots --remote --file=schema.sql
 npx wrangler secret put ADMIN_PASSWORD
 npx wrangler secret put MAILER_URL
 npx wrangler secret put MAILER_TOKEN
+npx wrangler secret put APPLICATIONS_STATS_URL
+npx wrangler secret put APPLICATIONS_STATS_TOKEN
 npx wrangler deploy
 ```
 
@@ -37,10 +39,13 @@ npx wrangler d1 execute slots --remote --file=migrations/0002_add_review_amount_
 
 `MAILER_URL` and `MAILER_TOKEN` are added after the Gmail Apps Script is deployed as a private token-protected web endpoint. Until then, all application and review records work; email delivery is simply skipped.
 
+`APPLICATIONS_STATS_URL` and `APPLICATIONS_STATS_TOKEN` connect the public applications counter to the token-protected Google Apps Script in `../gmail-application-stats.gs`. In Apps Script, set the project time zone to `Europe/Berlin`, add the same random token as the `STATS_TOKEN` script property, and deploy it as a web app that executes as the owner and is accessible to anyone. The Worker keeps the token private and exposes only aggregate counts. Without these secrets, the site falls back to 412 applications.
+
 ## Endpoints
 
 - `POST /api/applications` — accepts `spot`, `website`, `email`, `message`, and `logo` multipart data.
 - `GET /` — serves the public site and static assets from `../dist`.
+- `GET /api/counts` — returns the Gmail-backed total and per-day application counts, with a 412 fallback.
 - `GET /api/spots` — lists live spots for the public site.
 - `GET /go/:applicationId` — records a click and redirects to the advertiser with `ref=spots`. Public sponsor links use `rel="sponsored"`.
 

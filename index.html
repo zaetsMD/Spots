@@ -26,7 +26,7 @@
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500&display=swap" rel="stylesheet" />
-    <link rel="stylesheet" href="styles.css?v=41" />
+    <link rel="stylesheet" href="styles.css?v=44" />
     <script defer src="https://cloud.umami.is/script.js" data-website-id="92b041f2-9d60-47b2-ae58-55554fca7e5a"></script>
     <script type="application/ld+json">
       {
@@ -74,7 +74,14 @@
       </section>
 
       <section id="numbers" class="spot-section" data-nav="numbers">
-        <h2>412 applications.<br />24 interviews.<br />0 offers.</h2>
+        <h2 class="applications-heading" tabindex="0" aria-describedby="applications-breakdown"><span class="applications-total">412</span> applications.<br />24 interviews.<br />0 offers.</h2>
+        <div class="applications-breakdown" id="applications-breakdown" role="status" aria-live="polite">
+          <p>412 applications by the time Spots launched on September 17, 2026.</p>
+          <div class="applications-divider" aria-hidden="true"></div>
+          <ol class="applications-days">
+            <li><time>Today</time><span>No applications yet</span></li>
+          </ol>
+        </div>
         <p class="detail">One made it to 5 rounds.<br />Another to 4.<br />Three more to 3.<br />The rest: 1–2 stages.</p>
         <p class="aside">And I'm still going.</p>
       </section>
@@ -158,6 +165,6 @@
       <p class="live-copy">We'll let you know when it's live.</p>
     </section>
 
-    <script src="script.js?v=37"></script>
+    <script src="script.js?v=44"></script>
   </body>
 </html>

@@ -33,6 +33,118 @@ async function updatePresence() {
 
 updatePresence();
 setInterval(updatePresence, 60_000);
+
+const applicationsDays = document.querySelector('.applications-days');
+const applicationsDateFormatter = new Intl.DateTimeFormat('en-US', {
+  timeZone: 'Europe/Berlin',
+  month: 'long',
+  day: 'numeric',
+  year: 'numeric',
+});
+
+function applicationDayLabel(date, isToday) {
+  if (isToday) return 'Today';
+  return applicationsDateFormatter.format(new Date(`${date}T12:00:00+02:00`));
+}
+
+let applicationTotalTarget = 412;
+let applicationTotalAnimation;
+let applicationTotalPause;
+let applicationTotalLoopStarted = false;
+function renderApplicationTotalFrame(element, previousValue, nextValue) {
+  const characters = [...nextValue].map((character, index) => {
+    const slot = document.createElement('span');
+    slot.className = 'application-digit';
+    if (/\d/.test(character) && character !== previousValue[index]) {
+      slot.classList.add('is-changing');
+      const previous = document.createElement('span');
+      const next = document.createElement('span');
+      previous.className = 'application-digit-old';
+      next.className = 'application-digit-new';
+      previous.textContent = previousValue[index];
+      next.textContent = character;
+      slot.append(previous, next);
+    } else {
+      slot.textContent = character;
+    }
+    return slot;
+  });
+  element.replaceChildren(...characters);
+}
+
+function runApplicationTotalCycle() {
+  const element = document.querySelector('.applications-total');
+  if (!element) return;
+  const total = applicationTotalTarget;
+  const finalValue = total.toLocaleString('en-US');
+  element.dataset.value = finalValue;
+  element.setAttribute('aria-label', finalValue);
+  clearInterval(applicationTotalAnimation);
+  clearTimeout(applicationTotalPause);
+
+  if (motion.matches) {
+    element.textContent = finalValue;
+    return;
+  }
+
+  const digitWidth = Math.max(3, String(total).length);
+  const formatFrame = value => String(value).padStart(digitWidth, '0');
+  const duration = 1000;
+  const startedAt = performance.now();
+  let previousValue = formatFrame(0);
+  element.textContent = previousValue;
+
+  applicationTotalAnimation = window.setInterval(() => {
+    const progress = Math.min((performance.now() - startedAt) / duration, 1);
+    const nextNumber = Math.round(total * progress);
+    const nextValue = formatFrame(nextNumber);
+    if (nextValue !== previousValue) renderApplicationTotalFrame(element, previousValue, nextValue);
+    previousValue = nextValue;
+    if (progress === 1) {
+      clearInterval(applicationTotalAnimation);
+      element.textContent = finalValue;
+      applicationTotalPause = window.setTimeout(runApplicationTotalCycle, 2000);
+    }
+  }, 40);
+}
+
+function startApplicationTotalLoop() {
+  applicationTotalLoopStarted = true;
+  runApplicationTotalCycle();
+}
+
+function updateApplicationTotal(total) {
+  if (applicationTotalTarget === total) return;
+  applicationTotalTarget = total;
+  if (applicationTotalLoopStarted) runApplicationTotalCycle();
+}
+
+async function updateApplicationStats() {
+  if (!applicationsDays) return;
+  try {
+    const response = await fetch('/api/counts', { cache: 'no-store' });
+    if (!response.ok) throw new Error('Application statistics unavailable');
+    const stats = await response.json();
+    if (!Number.isInteger(stats.total) || !Array.isArray(stats.days)) throw new Error('Invalid application statistics');
+    updateApplicationTotal(stats.total);
+    if (!stats.days.length) return;
+    applicationsDays.replaceChildren(...stats.days.map(day => {
+      const item = document.createElement('li');
+      const date = document.createElement('time');
+      const count = document.createElement('span');
+      date.dateTime = day.date;
+      date.textContent = applicationDayLabel(day.date, day.isToday);
+      count.textContent = day.count > 0 ? `+${day.count}` : 'No applications yet';
+      item.append(date, count);
+      return item;
+    }));
+  } catch {
+    // Keep the launch total and today's empty state as a reliable fallback.
+  }
+}
+
+updateApplicationStats();
+setInterval(updateApplicationStats, 60_000);
 const stage = document.createElement('div');
 stage.className = 'scroll-stage';
 main.append(stage);
@@ -42,6 +154,7 @@ sections.forEach(section => {
   heading.innerHTML = heading.innerHTML.split(/<br\s*\/?\s*>/i)
     .map(line => `<span class="line"><span>${line}</span></span>`).join('');
 });
+startApplicationTotalLoop();
 const mobileStoryCarousel = document.createElement('div');
 mobileStoryCarousel.className = 'mobile-story-carousel';
 sections.filter(section => !section.classList.contains('final')).forEach(section => mobileStoryCarousel.append(section));
@@ -118,6 +231,7 @@ window.addEventListener('scroll', () => {
 window.addEventListener('resize', configure);
 window.addEventListener('hashchange', () => goToHash(location.hash));
 motion.addEventListener('change', configure);
+motion.addEventListener('change', runApplicationTotalCycle);
 desktop.addEventListener('change', configure);
 mobile.addEventListener('change', configure);
 configure();

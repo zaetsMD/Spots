@@ -3,3 +3,5 @@ slots-backend/**
 .github/**
 dist/**
 node_modules/**
+appsscript.json
+gmail-application-stats.gs

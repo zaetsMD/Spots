@@ -84,6 +84,28 @@ async function notify(env, payload) {
   if (!response.ok) console.error('Mailer failed', response.status);
 }
 
+async function applicationStats(env) {
+  if (!env.APPLICATIONS_STATS_URL || !env.APPLICATIONS_STATS_TOKEN) {
+    return json({ total: 412, days: [], fallback: true }, 200, { 'cache-control': 'public, max-age=60' });
+  }
+  try {
+    const endpoint = new URL(env.APPLICATIONS_STATS_URL);
+    endpoint.searchParams.set('token', env.APPLICATIONS_STATS_TOKEN);
+    const response = await fetch(endpoint, { headers: { accept: 'application/json' } });
+    if (!response.ok) throw new Error(`Stats source returned ${response.status}`);
+    const source = await response.json();
+    const total = Number(source.total);
+    const days = Array.isArray(source.days) ? source.days
+      .filter(day => /^\d{4}-\d{2}-\d{2}$/.test(day?.date) && Number.isInteger(Number(day.count)) && Number(day.count) >= 0)
+      .map(day => ({ date: day.date, count: Number(day.count), isToday: Boolean(day.isToday) })) : [];
+    if (!Number.isInteger(total) || total < 412) throw new Error('Invalid stats source payload');
+    return json({ total, days }, 200, { 'cache-control': 'public, max-age=30, stale-while-revalidate=120' });
+  } catch (error) {
+    console.error('Application stats error', error);
+    return json({ total: 412, days: [], fallback: true }, 200, { 'cache-control': 'public, max-age=30' });
+  }
+}
+
 async function activeSpots(env) {
   const result = await env.DB.prepare(`SELECT id, spot_number, website, logo_key, published_at, expires_at, total_clicks, status, approved_amount_cents
     FROM applications WHERE status = 'pending' OR (status = 'published' AND expires_at > ?) ORDER BY spot_number`).bind(now()).all();
@@ -270,6 +292,7 @@ export default {
     }
     if (url.pathname.startsWith('/go/')) return trackAndRedirect(request, env, url.pathname.slice(4));
     if (url.pathname === '/api/spots' && request.method === 'GET') return withCors(json(await activeSpots(env)), request, env);
+    if (url.pathname === '/api/counts' && request.method === 'GET') return withCors(await applicationStats(env), request, env);
     if (url.pathname === '/api/applications' && request.method === 'POST') return withCors(await submitApplication(request, env), request, env);
     if (url.pathname === '/api/admin/login' && request.method === 'POST') {
       const { password } = await request.json().catch(() => ({}));
