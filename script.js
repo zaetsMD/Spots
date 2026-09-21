@@ -154,6 +154,26 @@ sections.forEach(section => {
   heading.innerHTML = heading.innerHTML.split(/<br\s*\/?\s*>/i)
     .map(line => `<span class="line"><span>${line}</span></span>`).join('');
 });
+const applicationsHeading = document.querySelector('.applications-heading');
+const applicationsBreakdown = document.querySelector('.applications-breakdown');
+function setApplicationsBreakdown(open) {
+  applicationsHeading?.classList.toggle('is-open', open);
+  applicationsHeading?.setAttribute('aria-expanded', String(open));
+}
+applicationsHeading?.addEventListener('click', event => {
+  event.stopPropagation();
+  setApplicationsBreakdown(!applicationsHeading.classList.contains('is-open'));
+});
+applicationsHeading?.addEventListener('keydown', event => {
+  if (event.key !== 'Enter' && event.key !== ' ') return;
+  event.preventDefault();
+  setApplicationsBreakdown(!applicationsHeading.classList.contains('is-open'));
+});
+applicationsBreakdown?.addEventListener('click', event => event.stopPropagation());
+document.addEventListener('click', () => setApplicationsBreakdown(false));
+document.addEventListener('keydown', event => {
+  if (event.key === 'Escape') setApplicationsBreakdown(false);
+});
 startApplicationTotalLoop();
 const mobileStoryCarousel = document.createElement('div');
 mobileStoryCarousel.className = 'mobile-story-carousel';

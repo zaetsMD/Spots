@@ -353,39 +353,35 @@ h1, h2 {
 .detail { grid-column: 1 / span 4; align-self: end; margin-bottom: 2px; }
 .aside { grid-column: 10 / -1; align-self: end; margin-bottom: 2px; }
 
-.applications-heading { position: relative; cursor: default; outline: none; }
+.applications-heading { position: relative; cursor: pointer; outline: none; }
 .applications-heading:focus-visible { outline: 1px solid currentColor; outline-offset: 8px; }
 .applications-hint {
   position: absolute !important;
   z-index: 4;
-  top: calc(var(--margin-y) - 32px);
+  top: calc(var(--margin-y) - 36px);
   left: calc(var(--margin-x) + 320px);
   display: flex;
   align-items: flex-start;
-  width: 190px;
+  width: 176px;
   height: 58px;
   color: var(--black);
   pointer-events: none;
   transform: rotate(-2deg);
   transition: opacity 140ms ease;
 }
-.applications-hint svg { width: 86px; height: 52px; overflow: visible; }
+.applications-hint svg { width: 72px; height: 52px; overflow: visible; }
 .applications-hint path { fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
 .applications-hint span {
   margin: -2px 0 0 2px;
   white-space: nowrap;
-  font-family: Caveat, "Comic Sans MS", cursive;
-  font-size: 24px;
-  font-weight: 500;
+  font-family: "Shadows Into Light", "Comic Sans MS", cursive;
+  font-size: 23px;
+  font-weight: 400;
   line-height: 1;
   letter-spacing: 0;
 }
 .applications-hint-mobile { display: none; }
-@media (min-width: 801px) {
-  .applications-heading:hover ~ .applications-hint,
-  .applications-heading:focus ~ .applications-hint,
-  .applications-breakdown:hover + .applications-hint { opacity: 0 !important; }
-}
+.applications-heading.is-open ~ .applications-hint { opacity: 0 !important; }
 .applications-total { display: inline-flex; }
 .application-digit {
   position: relative;
@@ -436,9 +432,7 @@ h1, h2 {
   pointer-events: none;
   transition: opacity 160ms ease, translate 160ms ease, visibility 0s linear 160ms;
 }
-.applications-heading:hover + .applications-breakdown,
-.applications-heading:focus + .applications-breakdown,
-.applications-breakdown:hover {
+.applications-heading.is-open + .applications-breakdown {
   opacity: 1;
   translate: 0 0;
   visibility: visible;
@@ -506,8 +500,8 @@ h1, h2 {
     min-width: 0;
     align-items: stretch;
     gap: 24px;
-    margin-left: 24px;
-    padding: 0 24px 0 0;
+    margin: -56px 0 0 24px;
+    padding: 56px 24px 0 0;
     scroll-padding-left: 0;
     overflow-x: auto;
     overscroll-behavior-x: contain;
@@ -559,20 +553,30 @@ h1, h2 {
   .intro > .presence { display: none; }
   .detail, .aside { align-self: auto; margin: 0; }
   .applications-breakdown {
+    display: none;
     position: static !important;
     width: 100%;
     margin-top: -12px;
   }
+  .applications-heading.is-open + .applications-breakdown {
+    display: block;
+    opacity: 1;
+    translate: 0 0;
+    visibility: visible;
+    pointer-events: auto;
+  }
   .applications-hint {
-    top: 4px;
+    position: absolute !important;
+    top: -28px;
     right: 10px;
     left: auto;
-    width: 142px;
-    height: 48px;
-    transform: rotate(-5deg) scale(.82);
+    width: 130px;
+    height: 42px;
+    transform: rotate(-5deg) !important;
     transform-origin: top right;
   }
-  .applications-hint svg { width: 72px; height: 46px; }
+  .applications-hint svg { width: 62px; height: 42px; }
+  .applications-hint span { margin-top: 0; font-size: 22px; }
   .applications-hint-desktop { display: none; }
   .applications-hint-mobile { display: inline; }
   .intro .aside { margin-top: 12px; }
