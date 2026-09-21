@@ -11,6 +11,7 @@ const json = (body, status = 200, headers = {}) => new Response(JSON.stringify(b
   headers: { 'content-type': 'application/json; charset=utf-8', ...headers }
 });
 const now = () => new Date().toISOString();
+const epoch = () => Math.floor(Date.now() / 1000);
 const id = () => crypto.randomUUID();
 
 function cors(request, env) {
@@ -84,25 +85,46 @@ async function notify(env, payload) {
   if (!response.ok) console.error('Mailer failed', response.status);
 }
 
-async function applicationStats(env) {
+async function fetchApplicationStatsSource(env) {
   if (!env.APPLICATIONS_STATS_URL || !env.APPLICATIONS_STATS_TOKEN) {
-    return json({ total: 412, days: [], fallback: true }, 200, { 'cache-control': 'public, max-age=60' });
+    throw new Error('Application stats source is not configured');
   }
+  const endpoint = new URL(env.APPLICATIONS_STATS_URL);
+  endpoint.searchParams.set('token', env.APPLICATIONS_STATS_TOKEN);
+  const response = await fetch(endpoint, { headers: { accept: 'application/json' } });
+  if (!response.ok) throw new Error(`Stats source returned ${response.status}`);
+  const source = await response.json();
+  const total = Number(source.total);
+  const days = Array.isArray(source.days) ? source.days
+    .filter(day => /^\d{4}-\d{2}-\d{2}$/.test(day?.date) && Number.isInteger(Number(day.count)) && Number(day.count) >= 0)
+    .map(day => ({ date: day.date, count: Number(day.count), isToday: Boolean(day.isToday) })) : [];
+  if (!Number.isInteger(total) || total < 412) throw new Error('Invalid stats source payload');
+  return { total, days };
+}
+
+async function refreshApplicationStatsCache(env) {
+  const stats = await fetchApplicationStatsSource(env);
+  await env.DB.prepare(`INSERT INTO application_stats_cache (id, payload, updated_at) VALUES (1, ?, ?)
+    ON CONFLICT(id) DO UPDATE SET payload = excluded.payload, updated_at = excluded.updated_at`)
+    .bind(JSON.stringify(stats), epoch()).run();
+  return stats;
+}
+
+async function applicationStats(env, ctx) {
   try {
-    const endpoint = new URL(env.APPLICATIONS_STATS_URL);
-    endpoint.searchParams.set('token', env.APPLICATIONS_STATS_TOKEN);
-    const response = await fetch(endpoint, { headers: { accept: 'application/json' } });
-    if (!response.ok) throw new Error(`Stats source returned ${response.status}`);
-    const source = await response.json();
-    const total = Number(source.total);
-    const days = Array.isArray(source.days) ? source.days
-      .filter(day => /^\d{4}-\d{2}-\d{2}$/.test(day?.date) && Number.isInteger(Number(day.count)) && Number(day.count) >= 0)
-      .map(day => ({ date: day.date, count: Number(day.count), isToday: Boolean(day.isToday) })) : [];
-    if (!Number.isInteger(total) || total < 412) throw new Error('Invalid stats source payload');
-    return json({ total, days }, 200, { 'cache-control': 'public, max-age=30, stale-while-revalidate=120' });
+    const cached = await env.DB.prepare('SELECT payload, updated_at FROM application_stats_cache WHERE id = 1').first();
+    if (cached) {
+      const stats = JSON.parse(cached.payload);
+      if (epoch() - Number(cached.updated_at) >= 30) {
+        ctx?.waitUntil(refreshApplicationStatsCache(env).catch(error => console.error('Application stats refresh error', error)));
+      }
+      return json(stats, 200, { 'cache-control': 'public, max-age=10, stale-while-revalidate=60' });
+    }
+    const stats = await refreshApplicationStatsCache(env);
+    return json(stats, 200, { 'cache-control': 'public, max-age=10' });
   } catch (error) {
     console.error('Application stats error', error);
-    return json({ total: 412, days: [], fallback: true }, 200, { 'cache-control': 'public, max-age=30' });
+    return json({ total: 412, days: [], fallback: true }, 200, { 'cache-control': 'public, max-age=10' });
   }
 }
 
@@ -281,7 +303,7 @@ function adminPage2() {
 }
 
 export default {
-  async fetch(request, env) {
+  async fetch(request, env, ctx) {
     const url = new URL(request.url);
     if (request.method === 'OPTIONS') return new Response(null, { headers: cors(request, env) });
     if (url.pathname === '/health') return json({ ok: true });
@@ -292,7 +314,7 @@ export default {
     }
     if (url.pathname.startsWith('/go/')) return trackAndRedirect(request, env, url.pathname.slice(4));
     if (url.pathname === '/api/spots' && request.method === 'GET') return withCors(json(await activeSpots(env)), request, env);
-    if (url.pathname === '/api/counts' && request.method === 'GET') return withCors(await applicationStats(env), request, env);
+    if (url.pathname === '/api/counts' && request.method === 'GET') return withCors(await applicationStats(env, ctx), request, env);
     if (url.pathname === '/api/applications' && request.method === 'POST') return withCors(await submitApplication(request, env), request, env);
     if (url.pathname === '/api/admin/login' && request.method === 'POST') {
       const { password } = await request.json().catch(() => ({}));
@@ -326,5 +348,10 @@ export default {
     }
     return env.ASSETS.fetch(request);
   },
-  async scheduled(_controller, env, ctx) { ctx.waitUntil(expireSpots(env)); }
+  async scheduled(_controller, env, ctx) {
+    ctx.waitUntil(Promise.all([
+      expireSpots(env),
+      refreshApplicationStatsCache(env).catch(error => console.error('Application stats refresh error', error))
+    ]));
+  }
 };

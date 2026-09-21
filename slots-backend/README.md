@@ -35,6 +35,7 @@ For an existing database, run each migration in `migrations/` once, in filename 
 
 ```sh
 npx wrangler d1 execute slots --remote --file=migrations/0002_add_review_amount_and_timestamps.sql
+npx wrangler d1 execute slots --remote --file=migrations/0003_add_application_stats_cache.sql
 ```
 
 `MAILER_URL` and `MAILER_TOKEN` are added after the Gmail Apps Script is deployed as a private token-protected web endpoint. Until then, all application and review records work; email delivery is simply skipped.

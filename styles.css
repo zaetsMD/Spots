@@ -353,8 +353,39 @@ h1, h2 {
 .detail { grid-column: 1 / span 4; align-self: end; margin-bottom: 2px; }
 .aside { grid-column: 10 / -1; align-self: end; margin-bottom: 2px; }
 
-.applications-heading { cursor: default; outline: none; }
+.applications-heading { position: relative; cursor: default; outline: none; }
 .applications-heading:focus-visible { outline: 1px solid currentColor; outline-offset: 8px; }
+.applications-hint {
+  position: absolute !important;
+  z-index: 4;
+  top: calc(var(--margin-y) - 32px);
+  left: calc(var(--margin-x) + 320px);
+  display: flex;
+  align-items: flex-start;
+  width: 190px;
+  height: 58px;
+  color: var(--black);
+  pointer-events: none;
+  transform: rotate(-2deg);
+  transition: opacity 140ms ease;
+}
+.applications-hint svg { width: 86px; height: 52px; overflow: visible; }
+.applications-hint path { fill: none; stroke: currentColor; stroke-width: 2.1; stroke-linecap: round; stroke-linejoin: round; }
+.applications-hint span {
+  margin: -2px 0 0 2px;
+  white-space: nowrap;
+  font-family: Caveat, "Comic Sans MS", cursive;
+  font-size: 24px;
+  font-weight: 500;
+  line-height: 1;
+  letter-spacing: 0;
+}
+.applications-hint-mobile { display: none; }
+@media (min-width: 801px) {
+  .applications-heading:hover ~ .applications-hint,
+  .applications-heading:focus ~ .applications-hint,
+  .applications-breakdown:hover + .applications-hint { opacity: 0 !important; }
+}
 .applications-total { display: inline-flex; }
 .application-digit {
   position: relative;
@@ -532,6 +563,18 @@ h1, h2 {
     width: 100%;
     margin-top: -12px;
   }
+  .applications-hint {
+    top: 4px;
+    right: 10px;
+    left: auto;
+    width: 142px;
+    height: 48px;
+    transform: rotate(-5deg) scale(.82);
+    transform-origin: top right;
+  }
+  .applications-hint svg { width: 72px; height: 46px; }
+  .applications-hint-desktop { display: none; }
+  .applications-hint-mobile { display: inline; }
   .intro .aside { margin-top: 12px; }
   .down { display: none; }
   .offer { align-self: stretch; margin: 0; }
