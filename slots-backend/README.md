@@ -4,20 +4,13 @@ This Cloudflare Worker serves the complete Spots site from `../dist` and its API
 
 ## Deploy
 
-Production deploys run automatically from GitHub Actions after a push to `main`.
+Pushing a commit to `main` records it in Git but does not deploy it. Production deploys run only when a person opens the `Deploy Spots` workflow in GitHub Actions and presses **Run workflow** for `main`. Do not run `wrangler deploy` from a local checkout or agent session; Git must contain the exact version that reaches production.
 Add these repository secrets in GitHub before the first deploy:
 
 - `CLOUDFLARE_API_TOKEN` — an API token with Workers Scripts edit permission and access to this account.
 - `CLOUDFLARE_ACCOUNT_ID` — the Cloudflare account ID that owns the `slots-api` Worker, D1 database and R2 bucket.
 
 The Worker serves the root project directory directly, so the root site files are the single source of truth. Backend, Git metadata and workflow files are excluded from the uploaded assets.
-
-For a local deploy, from the repository root run:
-
-```sh
-cd slots-backend
-npx wrangler deploy --config wrangler.jsonc
-```
 
 For a new database:
 
@@ -28,7 +21,6 @@ npx wrangler secret put MAILER_URL
 npx wrangler secret put MAILER_TOKEN
 npx wrangler secret put APPLICATIONS_STATS_URL
 npx wrangler secret put APPLICATIONS_STATS_TOKEN
-npx wrangler deploy
 ```
 
 For an existing database, run each migration in `migrations/` once, in filename order, before deploying the worker. Migration `0002` adds the manually entered approval amount plus rejection timestamp:

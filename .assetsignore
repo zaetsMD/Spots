@@ -1,6 +1,7 @@
 slots-backend/**
 .git/**
 .github/**
+AGENTS.md
 dist/**
 node_modules/**
 appsscript.json

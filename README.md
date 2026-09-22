@@ -235,20 +235,15 @@ Review `slots-backend/wrangler.jsonc` before deploying a fork: its database ID, 
 
 ## Deployment
 
-Every push to `main` runs `.github/workflows/deploy.yml`. The workflow checks out the repository, uses Node.js 22, and deploys the Worker plus static assets with Wrangler.
+Production follows a Git-first, manually released workflow. Changes must be tested locally, committed, and pushed to `main`, which records them in Git but does not change the live site. To publish, open GitHub Actions, select `Deploy Spots`, choose **Run workflow** for `main`, and confirm. The workflow checks out that selected commit, verifies its SHA, uses Node.js 22, and deploys the Worker plus static assets with Wrangler to the GitHub `production` environment.
+
+Do not run a production deployment from a local checkout or an agent session. This keeps Git as the source of truth and ensures every live version is traceable and reversible. For extra protection, configure required reviewers for the `production` environment in the GitHub repository settings; when enabled, GitHub will require approval after **Run workflow** is pressed and before deployment begins.
 
 Add this GitHub Actions repository secret before the first deployment:
 
 - `CLOUDFLARE_API_TOKEN` — a token with permission to edit Workers and access the configured D1 and R2 resources.
 
 The workflow currently contains the original Cloudflare account ID. Replace it or move it to a `CLOUDFLARE_ACCOUNT_ID` repository secret when deploying under another account.
-
-A manual deployment can be run from the repository root:
-
-```sh
-cd slots-backend
-npx wrangler deploy --config wrangler.jsonc
-```
 
 ## Main endpoints
 
