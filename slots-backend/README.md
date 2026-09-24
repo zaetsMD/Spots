@@ -40,6 +40,7 @@ npx wrangler d1 execute slots --remote --file=migrations/0003_add_application_st
 - `GET /` — serves the public site and static assets from `../dist`.
 - `GET /api/counts` — returns the Gmail-backed total and per-day application counts, with a 412 fallback.
 - `GET /api/spots` — lists live spots for the public site.
+- `GET /api/history` — lists completed placements in expiry order, including spots whose timer ended before the hourly expiry job runs. Removing an application removes it from this list, and the first three ranks close up automatically.
 - `GET /go/:applicationId` — records a click and redirects to the advertiser with `ref=spots`. Public sponsor links use `rel="sponsored"`.
 
 Click tracking counts every redirect as a total click. A unique click is one IP + user-agent fingerprint per calendar day, so the current unique counter is best read as unique visitor-days. Before a spot expires, these counters are visible in the password-protected `/admin` page; the expiry email also reports the totals.

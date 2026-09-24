@@ -147,6 +147,22 @@ async function activeSpots(env) {
   }));
 }
 
+async function historicalSpots(env) {
+  const result = await env.DB.prepare(`SELECT id, spot_number, website, logo_key, published_at, expires_at
+    FROM applications
+    WHERE published_at IS NOT NULL AND expires_at IS NOT NULL
+      AND (status = 'expired' OR (status = 'published' AND expires_at <= ?))
+    ORDER BY expires_at ASC, id ASC`).bind(now()).all();
+  return result.results.map(row => ({
+    id: row.id,
+    spot: row.spot_number,
+    website: row.website,
+    logoUrl: `/logos/${row.logo_key}`,
+    publishedAt: row.published_at,
+    expiresAt: row.expires_at
+  }));
+}
+
 async function submitApplication(request, env) {
   const form = await request.formData();
   const spot = Number(form.get('spot'));
@@ -314,6 +330,7 @@ export default {
     }
     if (url.pathname.startsWith('/go/')) return trackAndRedirect(request, env, url.pathname.slice(4));
     if (url.pathname === '/api/spots' && request.method === 'GET') return withCors(json(await activeSpots(env)), request, env);
+    if (url.pathname === '/api/history' && request.method === 'GET') return withCors(json(await historicalSpots(env), 200, { 'cache-control': 'no-store' }), request, env);
     if (url.pathname === '/api/counts' && request.method === 'GET') return withCors(await applicationStats(env, ctx), request, env);
     if (url.pathname === '/api/applications' && request.method === 'POST') return withCors(await submitApplication(request, env), request, env);
     if (url.pathname === '/api/admin/login' && request.method === 'POST') {

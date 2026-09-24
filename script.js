@@ -391,6 +391,28 @@ const uploadPrompt = document.querySelector('.upload-prompt');
 const uploadDropzone = document.querySelector('.upload-dropzone');
 const thankYou = document.querySelector('.thank-you');
 const spotsApi = '';
+const spotTimers = new Map();
+const availableSpotMarkup = '<svg viewBox="0 0 144 184" preserveAspectRatio="none" aria-hidden="true"><line x1="0" y1="0" x2="144" y2="184" /></svg><span class="spot-claim">Claim this<br>spot</span>';
+
+function clearSpotTimers(spotNumber) {
+  const timers = spotTimers.get(spotNumber);
+  if (!timers) return;
+  clearInterval(timers.countdown);
+  clearTimeout(timers.expiry);
+  spotTimers.delete(spotNumber);
+}
+
+function showAvailableSpot(spotNumber) {
+  const card = cards[spotNumber - 1];
+  if (!card) return;
+  clearSpotTimers(spotNumber);
+  card.classList.remove('is-live', 'is-pending');
+  card.removeAttribute('target');
+  card.removeAttribute('rel');
+  card.href = '#apply';
+  card.setAttribute('aria-label', `Spot ${spotNumber} of ${spotCount}: Claim this spot`);
+  card.innerHTML = availableSpotMarkup;
+}
 
 function formatTimeRemaining(expiresAt) {
   const remaining = Math.max(0, new Date(expiresAt).getTime() - Date.now());
@@ -410,6 +432,11 @@ function formatPublicAmount(amountCents) {
 function showLiveSpot(spot) {
   const card = cards[spot.spot - 1];
   if (!card) return;
+  clearSpotTimers(spot.spot);
+  if (new Date(spot.expiresAt).getTime() <= Date.now()) {
+    showAvailableSpot(spot.spot);
+    return;
+  }
   const logo = document.createElement('img');
   logo.src = `${spotsApi}${spot.logoUrl}`;
   logo.alt = `Advertiser logo in spot ${spot.spot}`;
@@ -424,7 +451,12 @@ function showLiveSpot(spot) {
   header.append(number, amount);
   const updateCountdown = () => { countdown.textContent = formatTimeRemaining(spot.expiresAt); };
   updateCountdown();
-  window.setInterval(updateCountdown, 60000);
+  const countdownTimer = window.setInterval(updateCountdown, 60000);
+  const expiryTimer = window.setTimeout(() => {
+    showAvailableSpot(spot.spot);
+    refreshSpots();
+  }, new Date(spot.expiresAt).getTime() - Date.now());
+  spotTimers.set(spot.spot, { countdown: countdownTimer, expiry: expiryTimer });
   card.classList.add('is-live');
   card.href = `${spotsApi}${spot.goUrl}`;
   card.target = '_blank';
@@ -436,6 +468,7 @@ function showLiveSpot(spot) {
 function showPendingSpot(spot) {
   const card = cards[spot.spot - 1];
   if (!card) return;
+  clearSpotTimers(spot.spot);
   const label = document.createElement('span');
   label.className = 'spot-pending';
   label.innerHTML = `<span><span class="spot-word">Spot </span>#${spot.spot}</span><strong>Under review</strong>`;
@@ -458,13 +491,28 @@ function showPreviewSpot(card, index) {
   card.innerHTML = `<span class="spot-preview-logo spot-preview-logo--${index + 1}">${name}</span><span class="spot-countdown">Preview</span>`;
 }
 
+async function refreshSpots() {
+  try {
+    const response = await fetch(`${spotsApi}/api/spots`, { cache: 'no-store' });
+    if (!response.ok) return;
+    const spots = await response.json();
+    const byNumber = new Map(spots.map(spot => [spot.spot, spot]));
+    cards.forEach((_, index) => {
+      const spot = byNumber.get(index + 1);
+      if (!spot) showAvailableSpot(index + 1);
+      else if (spot.status === 'pending') showPendingSpot(spot);
+      else showLiveSpot(spot);
+    });
+  } catch (error) {
+    console.error('Could not refresh spots', error);
+  }
+}
+
 if (previewPopulatedSpots) {
   cards.slice(0, Math.min(previewPopulatedSpots, cards.length)).forEach(showPreviewSpot);
 } else {
-  fetch(`${spotsApi}/api/spots`)
-    .then(response => response.ok ? response.json() : [])
-    .then(spots => spots.forEach(spot => spot.status === 'pending' ? showPendingSpot(spot) : showLiveSpot(spot)))
-    .catch(() => {});
+  refreshSpots();
+  document.addEventListener('visibilitychange', () => { if (!document.hidden) refreshSpots(); });
 }
 let selectedSpot = 1;
 let paymentStarted = false;

@@ -39,13 +39,13 @@ The current version includes:
 - click tracking through a first-party redirect;
 - D1 persistence and R2 logo storage;
 - application, approval, rejection, and expiry emails through an optional mailer endpoint;
-- automatic expiry checks every hour;
+- automatic expiry checks every hour and a public archive of completed spots;
 - live and total visitor counts from Umami;
 - SEO metadata, Open Graph images, sitemap, robots rules, and Google Search Console verification;
 - reduced-motion support, keyboard interaction, focus states, labels, and a skip link;
 - automatic production deployment from `main` with GitHub Actions.
 
-The `History` page currently provides the final visual state and explains the archive concept. Automatically listing expired placements there is the main unfinished product step.
+The `History` page lists completed placements in the order their seven-day periods ended. The first three entries receive medal labels, and each card shows its active dates.
 
 ## How we got here
 
@@ -83,6 +83,7 @@ The latest stage completed metadata and social previews, moved deployment to the
 8. On approval, the logo, approved amount, and countdown become public for seven days.
 9. Sponsor clicks pass through `/go/:applicationId`, are counted, and then redirect with `ref=spots`.
 10. An hourly scheduled task expires finished placements and emails the final click totals.
+11. The placement disappears from the active board when its timer ends and appears in History. Removing it from the admin panel also removes it from History and moves later medal labels up.
 
 Payment verification is intentionally manual. The site opens Revolut Pay, but it does not receive or process payment-provider webhooks.
 
@@ -251,6 +252,7 @@ The workflow currently contains the original Cloudflare account ID. Replace it o
 | --- | --- | --- |
 | `GET` | `/health` | Worker health check |
 | `GET` | `/api/spots` | Public pending and active placements |
+| `GET` | `/api/history` | Public completed placements in expiry order |
 | `POST` | `/api/applications` | Submit participant details and a logo |
 | `GET` | `/go/:applicationId` | Count a sponsor click and redirect |
 | `GET` | `/logos/:key` | Serve an uploaded logo from R2 |
@@ -268,7 +270,6 @@ Unique clicks are counted as unique visitor-days: one hash of IP address and use
 ## Current boundaries
 
 - Payments are verified manually; there is no Revolut webhook.
-- The `History` page is not yet populated from expired D1 records.
 - Email delivery depends on a separate private, token-protected mailer endpoint.
 - There is no automated test suite yet; changes should be checked on desktop, mobile, keyboard navigation, and reduced-motion mode.
 - The deployment configuration is tied to the original Cloudflare resources and must be changed for a fork.
