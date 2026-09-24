@@ -288,7 +288,7 @@ async function expireSpots(env) {
     await notify(env, {
       to: record.email,
       subject: `Spot #${record.spot_number} — thank you for being part of the experiment`,
-      html: `<p>You were a part of the experiment, and that means a lot. Thank you, thank you, and once again thank you.</p><p>Your link was clicked <strong>${record.total_clicks}</strong> times: <strong>${record.unique_clicks}</strong> unique visitors and <strong>${record.total_clicks - record.unique_clicks}</strong> repeat clicks.</p>${applicantEmailFooter()}`
+      html: `<p>You were a part of the experiment, and that means a lot. Thank you, thank you, and once again thank you.</p><p>Your link was clicked <strong>${record.total_clicks}</strong> times: <strong>${record.unique_clicks}</strong> unique visitors and <strong>${record.total_clicks - record.unique_clicks}</strong> repeat clicks.</p><p>Your logo will now have a permanent place in our <a href="https://spots.eugenezaycev.com/history">History</a>.</p>${applicantEmailFooter()}`
     });
   }
 }
